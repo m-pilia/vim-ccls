@@ -1,0 +1,193 @@
+Before:
+  function! Dummy_callback(node) abort
+    let a:node['callback_result'] = 1
+  endfunction
+
+  function! Dummy_callback_lazy(node) abort
+    let a:node['callback_result_lazy'] = 1
+  endfunction
+
+  function! Dummy_appender(node) abort
+    let a:node['appender_result'] = 1
+  endfunction
+
+After:
+  delfunction Dummy_callback
+  delfunction Dummy_callback_lazy
+  delfunction Dummy_appender
+
+Execute(Test yggdrasil#node#new):
+  let node = yggdrasil#node#new(1,
+  \                             'foobar',
+  \                             'dummy_parent',
+  \                             'Dummy_callback',
+  \                             'Dummy_appender')
+
+  AssertEqual 1, node.id
+  AssertEqual 'foobar', node.label
+  AssertEqual 'dummy_parent', node.parent
+  AssertEqual v:true, node.collapsed
+  AssertEqual [], node.children
+
+Execute(Test yggdrasil#node#append):
+  let node = {'children': [], 'append': function('yggdrasil#node#append')}
+
+  call node.append(1, 'foobar', 'Dummy_callback', 'Dummy_appender')
+
+  AssertEqual 1, len(node.children)
+  AssertEqual 1, node.children[0].id
+  AssertEqual 'foobar', node.children[0].label
+  AssertEqual node, node.children[0].parent
+  AssertEqual v:true, node.children[0].collapsed
+  AssertEqual [], node.children[0].children
+
+Execute(Test yggdrasil#node#render):
+  let node = {
+  \  'id': 0,
+  \  'label': 'foobar',
+  \  'collapsed': 1,
+  \  'children': [],
+  \  'lazy_open': v:null,
+  \  'render': function('yggdrasil#node#render'),
+  \ }
+  let child = {
+  \  'id': 1,
+  \  'label': 'child',
+  \  'collapsed': 1,
+  \  'children': [],
+  \  'lazy_open': v:null,
+  \  'render': function('yggdrasil#node#render'),
+  \ }
+
+  let repr = node.render(0)
+
+  AssertEqual "  foobar [0]", repr
+
+  let repr = node.render(1)
+
+  AssertEqual "    foobar [0]", repr
+
+  let node.lazy_open = 'nope'
+  let repr = node.render(1)
+
+  AssertEqual "  ▸ foobar [0]", repr
+
+  let node.collapsed = 0
+  let repr = node.render(1)
+
+  AssertEqual "  ▾ foobar [0]", repr
+
+  let node.lazy_open = v:null
+  call add(node.children, child)
+  let repr = node.render(1)
+
+  AssertEqual "  ▾ foobar [0]\n      child [1]", repr
+
+Execute(Test yggdrasil#node#level):
+  let node = {'parent': {}, 'level': function('yggdrasil#node#level')}
+  let child = {'parent': node, 'level': function('yggdrasil#node#level')}
+  let grandchild = {'parent': child, 'level': function('yggdrasil#node#level')}
+
+  AssertEqual 0, node.level()
+  AssertEqual 1, child.level()
+  AssertEqual 2, grandchild.level()
+
+Execute(Test yggdrasil#node#execute):
+  let node = {
+  \  'callback': function('Dummy_callback'),
+  \  'exec': function('yggdrasil#node#exec'),
+  \ }
+
+  call node.exec()
+
+  AssertEqual 1, node.callback_result
+
+Execute(Test yggdrasil#node#find):
+  let Find = function('yggdrasil#node#find')
+  let grandsibling = {'id': 6, 'children': [], 'find': Find}
+  let grandchild = {'id': 5, 'children': [], 'find': Find}
+  let cousin = {'id': 4, 'children': [], 'find': Find}
+  let sibling = {'id': 3, 'children': [grandchild, grandsibling], 'find': Find}
+  let child = {'id': 2, 'children': [cousin], 'find': Find}
+  let root = {'id': 1, 'children': [child, sibling], 'find': Find}
+
+  AssertEqual v:null, root.find(0)
+  AssertEqual root, root.find(1)
+  AssertEqual child, root.find(2)
+  AssertEqual sibling, root.find(3)
+  AssertEqual cousin, root.find(4)
+  AssertEqual grandchild, root.find(5)
+  AssertEqual grandsibling, root.find(6)
+
+Execute(Test yggdrasil#node#set_collapsed):
+  let Set_collapsed = function('yggdrasil#node#set_collapsed')
+  let node = {
+  \  'collapsed': 0,
+  \  'lazy_open': v:null,
+  \  'set_collapsed': Set_collapsed,
+  \ }
+
+  call node.set_collapsed(0, 0)
+
+  AssertEqual 0, node.collapsed
+
+  call node.set_collapsed(1, 0)
+
+  AssertEqual 1, node.collapsed
+
+  call node.set_collapsed(-1, 0)
+
+  AssertEqual 0, node.collapsed
+
+  call node.set_collapsed(-1, 0)
+
+  AssertEqual 1, node.collapsed
+
+Execute(Test yggdrasil#node#set_collapsed recursive):
+  let Set_collapsed = function('yggdrasil#node#set_collapsed')
+  let child = {
+  \  'collapsed': 0,
+  \  'lazy_open': v:null,
+  \  'set_collapsed': Set_collapsed,
+  \  'children': [],
+  \ }
+  let root = {
+  \  'collapsed': 0,
+  \  'lazy_open': v:null,
+  \  'set_collapsed': Set_collapsed,
+  \  'children': [child],
+  \ }
+
+  call root.set_collapsed(0, 1)
+
+  AssertEqual 0, root.collapsed
+  AssertEqual 0, child.collapsed
+
+  call root.set_collapsed(1, 1)
+
+  AssertEqual 1, root.collapsed
+  AssertEqual 1, child.collapsed
+
+  call root.set_collapsed(-1, 1)
+
+  AssertEqual 0, root.collapsed
+  AssertEqual 0, child.collapsed
+
+  call root.set_collapsed(-1, 1)
+
+  AssertEqual 1, root.collapsed
+  AssertEqual 1, child.collapsed
+
+Execute(Test yggdrasil#node#set_collapsed lazy):
+  let Set_collapsed = function('yggdrasil#node#set_collapsed')
+  let node = {
+  \  'collapsed': 1,
+  \  'lazy_open': function('Dummy_appender'),
+  \  'set_collapsed': Set_collapsed,
+  \ }
+
+  call node.set_collapsed(-1, 0)
+
+  AssertEqual 0, node.collapsed
+  AssertEqual 1, node['appender_result']
+  AssertEqual v:null, node.lazy_open

@@ -1,0 +1,12 @@
+" vint: -ProhibitSetNoCompatible
+
+if has('win32')
+    set runtimepath=$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,C:\vader,C:\testplugin
+else
+    set runtimepath=/home/vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,/testplugin,/vader
+endif
+
+filetype plugin indent on
+syntax on
+
+set nocompatible

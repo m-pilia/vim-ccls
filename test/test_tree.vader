@@ -1,0 +1,36 @@
+After:
+  unlet! b:yggdrasil_tree
+
+Execute(Test yggdrasil#tree#new):
+  call yggdrasil#tree#new('foobar', 30, 'vertical', 'topleft')
+
+  AssertEqual 'yggdrasil', &ft
+  AssertEqual bufnr('.'), b:yggdrasil_tree.bufnr
+  AssertEqual 0, b:yggdrasil_tree.maxid
+
+Execute(Test yggdrasil#tree#insert):
+  let tree = {
+    \ 'bufnr': 0,
+    \ 'maxid': 0,
+    \ 'root': yggdrasil#node#new(0, 'foo', {}, v:null, v:null),
+    \ 'insert': function('yggdrasil#tree#insert'),
+    \ }
+
+  call tree.insert(0, 'bar', v:null, v:null)
+
+  AssertEqual 1, tree.maxid
+  AssertEqual 1, len(tree.root.children)
+  AssertEqual 1, tree.root.children[0].id
+  AssertEqual 'bar', tree.root.children[0].label
+  AssertEqual v:null, tree.root.children[0].callback
+  AssertEqual v:null, tree.root.children[0].lazy_open
+
+  call tree.insert(1, 'baz', v:null, v:null)
+
+  AssertEqual 2, tree.maxid
+  AssertEqual 1, len(tree.root.children)
+  AssertEqual 1, len(tree.root.children[0].children)
+  AssertEqual 2, tree.root.children[0].children[0].id
+  AssertEqual 'baz', tree.root.children[0].children[0].label
+  AssertEqual v:null, tree.root.children[0].children[0].callback
+  AssertEqual v:null, tree.root.children[0].children[0].lazy_open
