@@ -1,5 +1,6 @@
 vim-lsp-ccls: Extension of vim-lsp for the ccls Language Server
 ===============================================================
+[![Travis CI Build Status](https://travis-ci.org/m-pilia/vim-lsp-ccls.svg?branch=master)](https://travis-ci.org/m-pilia/vim-lsp-ccls)
 
 This plugin is an extension of
 [vim-lsp](https://github.com/prabirshrestha/vim-lsp) that adds support for some
