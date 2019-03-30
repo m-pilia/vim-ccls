@@ -1,3 +1,54 @@
+" Convert a path to an uri
+function! s:path2uri(path) abort
+    let l:path = substitute(a:path, '\', '/', 'g')
+
+    let l:prefix = matchstr(l:path, '\v(^\w+::|^\w+://)')
+    if len(l:prefix) < 1
+        let l:prefix = 'file://'
+    endif
+
+    let l:volume_end = has('win32') ? matchstrpos(l:path, '\c[A-Z]:')[2] : 0
+    if l:volume_end < 0
+        let l:volume_end = 0
+    endif
+
+    let l:uri = l:prefix . strpart(l:path, 0, l:volume_end)
+    for l:index in range(l:volume_end, len(l:path) - 1)
+        if l:path[l:index] =~# '^[a-zA-Z0-9_.~/-]$'
+            let l:uri .= l:path[l:index]
+        else
+            let l:uri .= printf('%%%02X', char2nr(l:path[l:index]))
+        endif
+    endfor
+
+    return l:uri
+endfunction
+
+" Convert an uri to a path
+function! s:uri2path(uri) abort
+    let l:path = substitute(a:uri, '^file://', '', '')
+    let l:path = substitute(l:path, '[?#].*', '', '')
+    let l:path = substitute(l:path,
+    \                       '%\(\x\x\)',
+    \                       '\=printf("%c", str2nr(submatch(1), 16))',
+    \                       'g')
+    if has('win32')
+        let l:path = substitute(l:path, '/', '\\', 'g')
+    endif
+    return l:path
+endfunction
+
+" Get the text document identifier for the current buffer
+function! s:text_document_identifier() abort
+    return {'uri': s:path2uri(expand('%:p'))}
+endfunction
+
+" Get the position under the cursor
+function! s:position() abort
+    return {'line': line('.') - 1, 'character': col('.') - 1}
+endfunction
+
+" Jump to a specified position in a given file
 function! s:jump_to(file, line, column, node) abort
     let l:yggdrasil_bufno = bufnr('%')
     silent execute "normal! \<c-w>\<c-p>"
@@ -9,20 +60,23 @@ function! s:jump_to(file, line, column, node) abort
     silent execute l:command . ' | call cursor(' . a:line . ',' . a:column . ')'
 endfunction
 
+" Callback to append the retrieved children to a node and update the tree
 function! s:append_children(id, data) abort
-    if lsp#client#is_error(a:data.response)
-        echoerr 'LSP error'
-        return
-    endif
-
-    let l:children_data = a:data.response.result.children
-    call s:make_children(a:id, 1, l:children_data)
+    call s:make_children(a:id, 1, a:data.children)
     call b:yggdrasil_tree.render()
 endfunction
 
+" Lazily fetch the children of a node
 function! s:lazy_open_callback(parent_id, node) abort
     let l:method = b:yggdrasil_tree.method
-    let l:extra_params = b:yggdrasil_tree.extra_params
+    let l:Handler = {data -> s:append_children(a:node.id, data)}
+
+    let l:params = {
+    \   'id': a:parent_id,
+    \   'hierarchy': v:true,
+    \   'levels': g:lsp_ccls_levels,
+    \ }
+    call extend(l:params, b:yggdrasil_tree.extra_params, 'force')
 
     " FIXME horrible hack
     " When sending a request, vim-lsp requires the file in the current buffer to
@@ -31,23 +85,13 @@ function! s:lazy_open_callback(parent_id, node) abort
     " Yggdrasil buffer.
     silent execute "normal! \<c-w>\<c-p>"
 
-    let l:request = {
-    \   'method': l:method,
-    \   'params': {
-    \       'id': a:parent_id,
-    \       'hierarchy': v:true,
-    \       'levels': g:lsp_ccls_levels,
-    \   },
-    \   'on_notification': {data -> s:append_children(a:node.id, data)},
-    \ }
-    call extend(l:request.params, l:extra_params, 'force')
-
-    call lsp#send_request('ccls', l:request)
+    call ccls#lsp#request(l:method, l:params, l:Handler)
 
     " Jump back to the Yggdrasil window after sending the request
     silent execute "normal! \<c-w>\<c-p>"
 endfunction
 
+" For each child in the list, make a node and append it to the parent
 function! s:make_children(parent_id, level, children_data) abort
     for l:child in a:children_data
         let l:file = matchlist(l:child.location.uri, 'file://\(.*\)')[1]
@@ -78,13 +122,9 @@ function! s:make_children(parent_id, level, children_data) abort
     endfor
 endfunction
 
-function! s:make_tree(extra_params, data) abort
-    if lsp#client#is_error(a:data.response)
-        echoerr 'LSP error'
-        return
-    endif
-
-    call yggdrasil#tree#new(a:data.response.result.name,
+" Callback to create an Yggdrasil window
+function! s:make_tree(method, extra_params, data) abort
+    call yggdrasil#tree#new(a:data.name,
     \                       g:lsp_ccls_size,
     \                       g:lsp_ccls_position,
     \                       g:lsp_ccls_orientation)
@@ -92,37 +132,32 @@ function! s:make_tree(extra_params, data) abort
     " Store additional information in the tree structure
     " to avoid having too many arguments in the callbacks
     let b:yggdrasil_tree['extra_params'] = a:extra_params
-    let b:yggdrasil_tree['method'] = a:data.request.method
+    let b:yggdrasil_tree['method'] = a:method
 
-    let l:children_data = a:data.response.result.children
-    call s:make_children('0', 1, l:children_data)
+    call s:make_children('0', 1, a:data.children)
     call b:yggdrasil_tree.render()
 endfunction
 
-function! s:send_request(method, params, handler) abort
-    let l:available_servers = lsp#get_server_names()
-    if len(l:available_servers) == 0 || count(l:available_servers, 'ccls') == 0
-        echoerr 'ccls language server unvailable'
-        return
-    endif
-
-    let l:request = {
-    \   'method': '$ccls/' . a:method,
-    \   'params': a:params,
-    \   'on_notification': a:handler,
-    \ }
-
-    call lsp#send_request('ccls', l:request)
-endfunction
-
+" Fill the quickfix list with the locations from LSP, and open it
 function! s:handle_locations(data) abort
-    if lsp#client#is_error(a:data.response)
-        echoerr 'LSP error: ' . a:data
-        return
-    endif
+    let l:locations = []
+    if !empty(a:data)
+        for l:item in a:data
+            let l:lnum = l:item.range.start.line + 1
+            let l:col = l:item.range.start.character + 1
+            let l:path = s:uri2path(l:item.uri)
+            let l:text = readfile(l:path)[l:lnum - 1]
 
-    call setqflist(lsp#ui#vim#utils#locations_to_loc_list(a:data))
-    botright copen
+            call add(l:locations, {
+            \   'filename': l:path,
+            \   'lnum': l:lnum,
+            \   'col': l:col,
+            \   'text': l:text,
+            \ })
+        endfor
+    endif
+    call setqflist(l:locations)
+    copen
 endfunction
 
 "
@@ -132,75 +167,75 @@ endfunction
 function! ccls#messages#vars() abort
     call setqflist([])
     let l:params = {
-    \   'textDocument': lsp#get_text_document_identifier(),
-    \   'position': lsp#get_position(),
+    \   'textDocument': s:text_document_identifier(),
+    \   'position': s:position(),
     \ }
-    call s:send_request('vars', l:params, function('s:handle_locations'))
+    call ccls#lsp#request('vars', l:params, function('s:handle_locations'))
 endfunction
 
 function! ccls#messages#members() abort
     call setqflist([])
     let l:params = {
-    \   'textDocument': lsp#get_text_document_identifier(),
-    \   'position': lsp#get_position(),
+    \   'textDocument': s:text_document_identifier(),
+    \   'position': s:position(),
     \   'hierarchy': v:false,
     \ }
-    call s:send_request('member', l:params, function('s:handle_locations'))
+    call ccls#lsp#request('member', l:params, function('s:handle_locations'))
 endfunction
 
 function! ccls#messages#member_hierarchy() abort
     let l:params = {
-    \   'textDocument': lsp#get_text_document_identifier(),
-    \   'position': lsp#get_position(),
+    \   'textDocument': s:text_document_identifier(),
+    \   'position': s:position(),
     \   'hierarchy': v:true,
     \   'levels': g:lsp_ccls_levels,
     \ }
-    let l:Handler = function('s:make_tree', [{}])
-    call s:send_request('member', l:params, l:Handler)
+    let l:Handler = function('s:make_tree', ['member', {}])
+    call ccls#lsp#request('member', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#inheritance(derived) abort
     call setqflist([])
     let l:params = {
-    \   'textDocument': lsp#get_text_document_identifier(),
-    \   'position': lsp#get_position(),
+    \   'textDocument': s:text_document_identifier(),
+    \   'position': s:position(),
     \   'hierarchy': v:false,
     \   'derived': a:derived,
     \ }
-    call s:send_request('inheritance', l:params, function('s:handle_locations'))
+    call ccls#lsp#request('inheritance', l:params, function('s:handle_locations'))
 endfunction
 
 function! ccls#messages#inheritance_hierarchy(derived) abort
     let l:params = {
-    \   'textDocument': lsp#get_text_document_identifier(),
-    \   'position': lsp#get_position(),
+    \   'textDocument': s:text_document_identifier(),
+    \   'position': s:position(),
     \   'hierarchy': v:true,
     \   'levels': g:lsp_ccls_levels,
     \   'derived': a:derived,
     \ }
-    let l:Handler = function('s:make_tree', [{'derived': a:derived}])
-    call s:send_request('inheritance', l:params, l:Handler)
+    let l:Handler = function('s:make_tree', ['inheritance', {'derived': a:derived}])
+    call ccls#lsp#request('inheritance', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#calls(callee) abort
     call setqflist([])
     let l:params = {
-    \   'textDocument': lsp#get_text_document_identifier(),
-    \   'position': lsp#get_position(),
+    \   'textDocument': s:text_document_identifier(),
+    \   'position': s:position(),
     \   'hierarchy': v:false,
     \   'callee': a:callee,
     \ }
-    call s:send_request('call', l:params, function('s:handle_locations'))
+    call ccls#lsp#request('call', l:params, function('s:handle_locations'))
 endfunction
 
 function! ccls#messages#call_hierarchy(callee) abort
     let l:params = {
-    \   'textDocument': lsp#get_text_document_identifier(),
-    \   'position': lsp#get_position(),
+    \   'textDocument': s:text_document_identifier(),
+    \   'position': s:position(),
     \   'hierarchy': v:true,
     \   'levels': g:lsp_ccls_levels,
     \   'callee': a:callee,
     \ }
-    let l:Handler = function('s:make_tree', [{'callee': a:callee}])
-    call s:send_request('call', l:params, l:Handler)
+    let l:Handler = function('s:make_tree', ['call', {'callee': a:callee}])
+    call ccls#lsp#request('call', l:params, l:Handler)
 endfunction
