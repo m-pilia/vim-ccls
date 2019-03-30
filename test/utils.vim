@@ -1,6 +1,6 @@
 " Call a script-local function
 function! Call(script, name, ...) abort
-    exec 'source ' . b:script
+    exec 'source ' . a:script
     redir => l:out
     silent execute 'scriptnames'
     redir END
