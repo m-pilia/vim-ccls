@@ -142,7 +142,7 @@ LspCclsDerived                                                *LspCclsDerived*
 
 Get a list of derived classes for the symbol under the cursor.
 
-LspCclsBaseHierarchy                                    *LspCclsBaseHierarchy*
+LspCclsDerivedHierarchy                                    *LspCclsBaseHierarchy*
 
 Get a tree of inheritance descendants for the symbol under cursor.
 

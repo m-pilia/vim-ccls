@@ -52,7 +52,7 @@ list](http://vimdoc.sourceforge.net/htmldoc/quickfix.html).
   Get a tree of inheritance ancestors for the symbol under cursor.
 * **LspCclsDerived**:
   Get a list of derived classes for the symbol under the cursor.
-* **LspCclsBaseHierarchy**:
+* **LspCclsDerivedHierarchy**:
   Get a tree of inheritance descendants for the symbol under cursor.
 * **LspCclsCallers**:
   Get a list of functions calling the function under the cursor.
