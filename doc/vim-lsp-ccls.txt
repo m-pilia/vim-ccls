@@ -1,5 +1,4 @@
-*vim-lsp-ccls.txt*  Extension to vim-lsp supporting extra features provided by
-the ccls language server.
+*vim-lsp-ccls.txt*  Extension for the ccls language server.
 *vim-lsp-ccls*
 
 ==============================================================================
@@ -32,11 +31,14 @@ CONTENTS                                               *vim-lsp-ccls-contents*
 ==============================================================================
 INTRODUCTION                                       *vim-lsp-ccls-introduction*
 
-Extension to vim-lsp (https://github.com/prabirshrestha/vim-lsp) supporting
-additional, non-standard features of ccls, such as calls and hierarchies.
+Language Server extension supporting additional, non-standard features of ccls,
+such as calls and hierarchies.
 
-This plugin does not provide any implementation of a Language Server client,
-and it only adds some features on top of vim-lsp.
+This plugin does not implement a Language Server client, instead it relies on an
+existing LSP client, adding on top of it the ccls-specific features. Currently
+supported LSP clients are:
+* vim-lsc (https://github.com/natebosch/vim-lsc)
+* vim-lsp (https://github.com/prabirshrestha/vim-lsp)
 
 ==============================================================================
 INSTALLATION                                       *vim-lsp-ccls-installation*
@@ -44,13 +46,22 @@ INSTALLATION                                       *vim-lsp-ccls-installation*
 This plugin is implemented in pure VimScript, and it can be installed with
 any plugin manager.
 
-This plugin depends on vim-lsp (https://github.com/prabirshrestha/vim-lsp) and
-the ccls language server (https://github.com/MaskRay/ccls). In order for this
-plugin to work, ccls must be installed and provided with a working
+In order for this plugin to work, ccls language server
+(https://github.com/MaskRay/ccls) must be installed and provided with a working
 configuration for the project
-(https://github.com/MaskRay/ccls/wiki/Project-Setup), and the vim-lsp plugin
-must be installed and configured to use the ccls language server
-(https://github.com/prabirshrestha/vim-lsp/wiki/Servers-ccls).
+(https://github.com/MaskRay/ccls/wiki/Project-Setup).
+
+This plugin depends on either [vim-lsc](https://github.com/natebosch/vim-lsc) or
+[vim-lsp](https://github.com/prabirshrestha/vim-lsp), and at least one of these
+LS clients needs to be installed and properly configured with ccls as language
+server in order for it to work.
+
+To install ccls and set up a project to use it in combination with vim-lsp,
+follow the instructions in the ccls wiki
+(https://github.com/MaskRay/ccls/wiki/vim-lsp).
+
+To set up a project with vim-lsc, please refer to |lsc-setup| and, for advanced
+configuration, to |lsc-server-message_hooks|.
 
 ==============================================================================
 Options                                                      *vim-lsp-options*

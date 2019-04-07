@@ -1,11 +1,14 @@
-vim-lsp-ccls: Extension of vim-lsp for the ccls Language Server
+vim-lsp-ccls: LSP extension for the ccls Language Server
 ===============================================================
 [![Travis CI Build Status](https://travis-ci.org/m-pilia/vim-lsp-ccls.svg?branch=master)](https://travis-ci.org/m-pilia/vim-lsp-ccls)
 
-This plugin is an extension of
-[vim-lsp](https://github.com/prabirshrestha/vim-lsp) that adds support for some
-additional methods provided by [ccls](https://github.com/MaskRay/ccls), which
-are not part of the standard Language Server Protocol.
+This plugin supports some additional methods provided by
+[ccls](https://github.com/MaskRay/ccls), which are not part of the standard
+Language Server Protocol (LSP). It does not implement a LSP client, but it
+relies on an existing LSP client, adding on top of it the ccls-specific
+features. Currently supported LSP clients are:
+* [vim-lsc](https://github.com/natebosch/vim-lsc)
+* [vim-lsp](https://github.com/prabirshrestha/vim-lsp)
 
 The plugin implements a tree viewer to display call, inheritance, and member
 hierarchies. Trees are built lazily, fetching children only when it is needed
@@ -31,13 +34,18 @@ the cursor.
 Installation
 ============
 
-This plugin can be installed with any vim plugin manager. It depends on
-[vim-lsp](https://github.com/prabirshrestha/vim-lsp), that needs to be installed
-in order for it to work.
+This plugin can be installed with any vim plugin manager. It depends on either
+[vim-lsc](https://github.com/natebosch/vim-lsc) or
+[vim-lsp](https://github.com/prabirshrestha/vim-lsp), and at least one of these
+LS clients needs to be installed and properly configured with ccls as language
+server in order for it to work.
 
 To install ccls and set up a project to use it in combination with vim-lsp,
 follow the instructions in the [ccls
 wiki](https://github.com/MaskRay/ccls/wiki/vim-lsp).
+
+To set up a project with vim-lsc, please refer to the [lsc
+documentation](https://github.com/natebosch/vim-lsc/blob/master/doc/lsc.txt).
 
 Commands
 ========
@@ -120,7 +128,9 @@ Debugging
 =========
 
 If you encounter any problem, the first step for troubleshooting is to enable
-logging of `vim-lsp`, to get debug information in a log file:
+logging in your LS client. For additional information about vim-lsc, please see
+|lsc-debugging|. For vim-lsp, it is possible to easily get debug information in
+a log file by setting the following variables:
 
 ```vim
 let g:lsp_log_verbose = 1

@@ -68,7 +68,8 @@ endfunction
 
 " Lazily fetch the children of a node
 function! s:lazy_open_callback(parent_id, node) abort
-    let l:method = b:yggdrasil_tree.method
+    let l:filetype = b:yggdrasil_tree['filetype']
+    let l:method = b:yggdrasil_tree['method']
     let l:Handler = {data -> s:append_children(a:node.id, data)}
 
     let l:params = {
@@ -85,7 +86,7 @@ function! s:lazy_open_callback(parent_id, node) abort
     " Yggdrasil buffer.
     silent execute "normal! \<c-w>\<c-p>"
 
-    call ccls#lsp#request(l:method, l:params, l:Handler)
+    call ccls#lsp#request(l:filetype, l:method, l:params, l:Handler)
 
     " Jump back to the Yggdrasil window after sending the request
     silent execute "normal! \<c-w>\<c-p>"
@@ -124,6 +125,8 @@ endfunction
 
 " Callback to create an Yggdrasil window
 function! s:make_tree(method, extra_params, data) abort
+    let l:filetype = &filetype
+
     call yggdrasil#tree#new(a:data.name,
     \                       g:lsp_ccls_size,
     \                       g:lsp_ccls_position,
@@ -131,6 +134,7 @@ function! s:make_tree(method, extra_params, data) abort
 
     " Store additional information in the tree structure
     " to avoid having too many arguments in the callbacks
+    let b:yggdrasil_tree['filetype'] = l:filetype
     let b:yggdrasil_tree['extra_params'] = a:extra_params
     let b:yggdrasil_tree['method'] = a:method
 
@@ -170,7 +174,7 @@ function! ccls#messages#vars() abort
     \   'textDocument': s:text_document_identifier(),
     \   'position': s:position(),
     \ }
-    call ccls#lsp#request('vars', l:params, function('s:handle_locations'))
+    call ccls#lsp#request(&filetype, 'vars', l:params, function('s:handle_locations'))
 endfunction
 
 function! ccls#messages#members() abort
@@ -180,7 +184,7 @@ function! ccls#messages#members() abort
     \   'position': s:position(),
     \   'hierarchy': v:false,
     \ }
-    call ccls#lsp#request('member', l:params, function('s:handle_locations'))
+    call ccls#lsp#request(&filetype, 'member', l:params, function('s:handle_locations'))
 endfunction
 
 function! ccls#messages#member_hierarchy() abort
@@ -191,7 +195,7 @@ function! ccls#messages#member_hierarchy() abort
     \   'levels': g:lsp_ccls_levels,
     \ }
     let l:Handler = function('s:make_tree', ['member', {}])
-    call ccls#lsp#request('member', l:params, l:Handler)
+    call ccls#lsp#request(&filetype, 'member', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#inheritance(derived) abort
@@ -202,7 +206,7 @@ function! ccls#messages#inheritance(derived) abort
     \   'hierarchy': v:false,
     \   'derived': a:derived,
     \ }
-    call ccls#lsp#request('inheritance', l:params, function('s:handle_locations'))
+    call ccls#lsp#request(&filetype, 'inheritance', l:params, function('s:handle_locations'))
 endfunction
 
 function! ccls#messages#inheritance_hierarchy(derived) abort
@@ -214,7 +218,7 @@ function! ccls#messages#inheritance_hierarchy(derived) abort
     \   'derived': a:derived,
     \ }
     let l:Handler = function('s:make_tree', ['inheritance', {'derived': a:derived}])
-    call ccls#lsp#request('inheritance', l:params, l:Handler)
+    call ccls#lsp#request(&filetype, 'inheritance', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#calls(callee) abort
@@ -225,7 +229,7 @@ function! ccls#messages#calls(callee) abort
     \   'hierarchy': v:false,
     \   'callee': a:callee,
     \ }
-    call ccls#lsp#request('call', l:params, function('s:handle_locations'))
+    call ccls#lsp#request(&filetype, 'call', l:params, function('s:handle_locations'))
 endfunction
 
 function! ccls#messages#call_hierarchy(callee) abort
@@ -237,5 +241,5 @@ function! ccls#messages#call_hierarchy(callee) abort
     \   'callee': a:callee,
     \ }
     let l:Handler = function('s:make_tree', ['call', {'callee': a:callee}])
-    call ccls#lsp#request('call', l:params, l:Handler)
+    call ccls#lsp#request(&filetype, 'call', l:params, l:Handler)
 endfunction
