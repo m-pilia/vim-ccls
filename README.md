@@ -21,17 +21,13 @@ under the cursor (analogous to the Call Hierarchy View in Eclipse). Similarly,
 the callee tree visualises a hierarchy in the opposite direction, showing
 functions being called.
 
-![call_hierarchy](https://user-images.githubusercontent.com/8300317/54882558-80b75600-4e5b-11e9-8e02-6d17529df4fa.png)
-
 The base/derived hierarchy allows to visualise inheritance trees for the class
 under the cursor.
-
-![inheritance_hierarchy](https://user-images.githubusercontent.com/8300317/54882559-80b75600-4e5b-11e9-9a68-12f98d8f2f5c.png)
 
 The member hierarchy allows to visualise a tree of members inside a type under
 the cursor.
 
-![member_hierarchy](https://user-images.githubusercontent.com/8300317/54882560-80b75600-4e5b-11e9-95ef-8725f6eba410.png)
+![demo](https://user-images.githubusercontent.com/8300317/56425740-e14c7e00-62b5-11e9-8b83-d1d064fc3033.gif)
 
 Installation
 ============
