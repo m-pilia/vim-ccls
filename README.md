@@ -82,7 +82,7 @@ Settings
 
 It is possible to automatically close a tree buffer when jumping to a location:
 ```vim
-let g:lsp_ccls_close_on_jump = v:false
+let g:lsp_ccls_close_on_jump = v:true
 ```
 
 To control how many levels of depth in the sub-tree are fetched for each
