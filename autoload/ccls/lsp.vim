@@ -1,7 +1,14 @@
+" Print a warning message
+function! s:warning(message) abort
+    echohl WarningMsg
+    echom a:message
+    echohl None
+endfunction
+
 " Handle a response from vim-lsp
 function! s:vim_lsp_handler(handler, data) abort
     if lsp#client#is_error(a:data.response)
-        echoerr 'LSP error'
+        call s:warning('LSP error')
         return
     endif
     call a:handler(a:data.response.result)
@@ -9,8 +16,11 @@ endfunction
 
 " Handle a response from LanguageClient-neovim
 function! s:lcn_handler(handler, data) abort
-    if type(a:data) != v:t_dict || has_key(a:data, 'error')
-        echoerr 'LSP error'
+    if type(a:data) != v:t_dict ||
+    \  has_key(a:data, 'error') ||
+    \  !has_key(a:data, 'result') ||
+    \  type(a:data.result) != v:t_dict
+        call s:warning('LSP error')
         return
     endif
     call a:handler(a:data.result)
@@ -30,7 +40,7 @@ function! ccls#lsp#request(filetype, method, params, handler) abort
         " Use vim-lsp
         let l:available_servers = lsp#get_server_names()
         if len(l:available_servers) == 0 || count(l:available_servers, 'ccls') == 0
-            echoerr 'ccls language server unvailable'
+            call s:warning('ccls language server unvailable')
             return
         endif
 
