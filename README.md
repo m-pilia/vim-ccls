@@ -7,6 +7,8 @@ This plugin supports some additional methods provided by
 Language Server Protocol (LSP). It does not implement a LSP client, but it
 relies on an existing LSP client, adding on top of it the ccls-specific
 features. Currently supported LSP clients are:
+
+* [LanguageClient-neovim](https://github.com/autozimu/LanguageClient-neovim)
 * [vim-lsc](https://github.com/natebosch/vim-lsc)
 * [vim-lsp](https://github.com/prabirshrestha/vim-lsp)
 
@@ -34,15 +36,14 @@ the cursor.
 Installation
 ============
 
-This plugin can be installed with any vim plugin manager. It depends on either
-[vim-lsc](https://github.com/natebosch/vim-lsc) or
-[vim-lsp](https://github.com/prabirshrestha/vim-lsp), and at least one of these
-LS clients needs to be installed and properly configured with ccls as language
-server in order for it to work.
+This plugin can be installed with any vim plugin manager. At least one of the
+supported Language Server clients listed above needs to be installed and
+properly configured with ccls as language server in order for it to work.
 
-To install ccls and set up a project to use it in combination with vim-lsp,
-follow the instructions in the [ccls
-wiki](https://github.com/MaskRay/ccls/wiki/vim-lsp).
+To install ccls and set up a project to use it in combination with vim-lsp or
+LanguageClient-neovim, follow the instructions in the ccls wiki
+([vim-lsp](https://github.com/MaskRay/ccls/wiki/vim-lsp),
+[LanguageClient-neovim](https://github.com/MaskRay/ccls/wiki/LanguageClient-neovim)).
 
 To set up a project with vim-lsc, please refer to the [lsc
 documentation](https://github.com/natebosch/vim-lsc/blob/master/doc/lsc.txt).

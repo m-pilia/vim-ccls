@@ -7,12 +7,25 @@ function! s:vim_lsp_handler(handler, data) abort
     call a:handler(a:data.response.result)
 endfunction
 
+" Handle a response from LanguageClient-neovim
+function! s:lcn_handler(handler, data) abort
+    if type(a:data) != v:t_dict || has_key(a:data, 'error')
+        echoerr 'LSP error'
+        return
+    endif
+    call a:handler(a:data.result)
+endfunction
+
 " Make a request to the lsp server
 " Try to automatically find an available LSP client
 function! ccls#lsp#request(filetype, method, params, handler) abort
     if exists('*lsc#server#call')
         " Use vim-lsc
         call lsc#server#call(a:filetype, '$ccls/' . a:method, a:params, a:handler)
+    elseif exists('*LanguageClient#Call')
+        " Use LanguageClient-neovim
+        let l:Callback = function('s:lcn_handler', [a:handler])
+        call LanguageClient#Call('$ccls/' . a:method, a:params, l:Callback)
     elseif exists('*lsp#send_request')
         " Use vim-lsp
         let l:available_servers = lsp#get_server_names()

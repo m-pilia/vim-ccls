@@ -37,6 +37,7 @@ such as calls and hierarchies.
 This plugin does not implement a Language Server client, instead it relies on an
 existing LSP client, adding on top of it the ccls-specific features. Currently
 supported LSP clients are:
+* LanguageClient-neovim (https://github.com/autozimu/LanguageClient-neovim)
 * vim-lsc (https://github.com/natebosch/vim-lsc)
 * vim-lsp (https://github.com/prabirshrestha/vim-lsp)
 
@@ -46,19 +47,19 @@ INSTALLATION                                       *vim-lsp-ccls-installation*
 This plugin is implemented in pure VimScript, and it can be installed with
 any plugin manager.
 
-In order for this plugin to work, ccls language server
+In order for this plugin to work, the ccls language server
 (https://github.com/MaskRay/ccls) must be installed and provided with a working
 configuration for the project
 (https://github.com/MaskRay/ccls/wiki/Project-Setup).
 
-This plugin depends on either [vim-lsc](https://github.com/natebosch/vim-lsc) or
-[vim-lsp](https://github.com/prabirshrestha/vim-lsp), and at least one of these
-LS clients needs to be installed and properly configured with ccls as language
-server in order for it to work.
+At least one of the supported Language Server clients listed in
+|vim-lsp-ccls-introduction| needs to be installed and properly configured with
+ccls as language server in order for it to work.
 
-To install ccls and set up a project to use it in combination with vim-lsp,
-follow the instructions in the ccls wiki
-(https://github.com/MaskRay/ccls/wiki/vim-lsp).
+To install ccls and set up a project to use it in combination with vim-lsp or
+LanguageClient-neovim, follow the instructions in the ccls wiki:
+* https://github.com/MaskRay/ccls/wiki/vim-lsp
+* https://github.com/MaskRay/ccls/wiki/LanguageClient-neovim
 
 To set up a project with vim-lsc, please refer to |lsc-setup| and, for advanced
 configuration, to |lsc-server-message_hooks|.
