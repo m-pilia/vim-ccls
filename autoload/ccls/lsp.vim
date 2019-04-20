@@ -26,6 +26,11 @@ function! s:lcn_handler(handler, data) abort
     call a:handler(a:data.result)
 endfunction
 
+" Handle a response from coc.nvim
+function! s:coc_handler(handler, error, data) abort
+    call a:handler(a:data)
+endfunction
+
 " Make a request to the lsp server
 " Try to automatically find an available LSP client
 function! ccls#lsp#request(filetype, method, params, handler) abort
@@ -36,6 +41,10 @@ function! ccls#lsp#request(filetype, method, params, handler) abort
         " Use LanguageClient-neovim
         let l:Callback = function('s:lcn_handler', [a:handler])
         call LanguageClient#Call('$ccls/' . a:method, a:params, l:Callback)
+    elseif exists('*CocRequestAsync')
+        " Use coc.nvim
+        let l:Callback = function('s:coc_handler', [a:handler])
+        call CocRequestAsync('ccls','$ccls/' . a:method, a:params, l:Callback)
     elseif exists('*lsp#send_request')
         " Use vim-lsp
         let l:available_servers = lsp#get_server_names()
@@ -51,5 +60,7 @@ function! ccls#lsp#request(filetype, method, params, handler) abort
         \ }
 
         call lsp#send_request('ccls', l:request)
+    else
+        call s:warning('No LSP plugin found!')
     end
 endfunction

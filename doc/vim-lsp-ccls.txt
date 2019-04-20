@@ -37,9 +37,10 @@ such as calls and hierarchies.
 This plugin does not implement a Language Server client, instead it relies on an
 existing LSP client, adding on top of it the ccls-specific features. Currently
 supported LSP clients are:
+* coc.nvim              (https://github.com/neoclide/coc.nvim)
 * LanguageClient-neovim (https://github.com/autozimu/LanguageClient-neovim)
-* vim-lsc (https://github.com/natebosch/vim-lsc)
-* vim-lsp (https://github.com/prabirshrestha/vim-lsp)
+* vim-lsc               (https://github.com/natebosch/vim-lsc)
+* vim-lsp               (https://github.com/prabirshrestha/vim-lsp)
 
 ==============================================================================
 INSTALLATION                                       *vim-lsp-ccls-installation*
@@ -52,12 +53,13 @@ In order for this plugin to work, the ccls language server
 configuration for the project
 (https://github.com/MaskRay/ccls/wiki/Project-Setup).
 
-At least one of the supported Language Server clients listed in
+One of the supported Language Server client plugins listed in
 |vim-lsp-ccls-introduction| needs to be installed and properly configured with
 ccls as language server in order for it to work.
 
-To install ccls and set up a project to use it in combination with vim-lsp or
-LanguageClient-neovim, follow the instructions in the ccls wiki:
+To install ccls and set up a project to use it in combination with coc.nvim,
+LanguageClient-neovim, or vim-lsp, follow the instructions in the ccls wiki:
+* https://github.com/MaskRay/ccls/wiki/coc.nvim
 * https://github.com/MaskRay/ccls/wiki/vim-lsp
 * https://github.com/MaskRay/ccls/wiki/LanguageClient-neovim
 
