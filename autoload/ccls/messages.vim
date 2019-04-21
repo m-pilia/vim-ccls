@@ -174,7 +174,8 @@ function! ccls#messages#vars() abort
     \   'textDocument': s:text_document_identifier(),
     \   'position': s:position(),
     \ }
-    call ccls#lsp#request(&filetype, 'vars', l:params, function('s:handle_locations'))
+    let l:Handler = function('s:handle_locations')
+    call ccls#lsp#request(&filetype, '$ccls/vars', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#members() abort
@@ -184,7 +185,8 @@ function! ccls#messages#members() abort
     \   'position': s:position(),
     \   'hierarchy': v:false,
     \ }
-    call ccls#lsp#request(&filetype, 'member', l:params, function('s:handle_locations'))
+    let l:Handler = function('s:handle_locations')
+    call ccls#lsp#request(&filetype, '$ccls/member', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#member_hierarchy() abort
@@ -194,8 +196,8 @@ function! ccls#messages#member_hierarchy() abort
     \   'hierarchy': v:true,
     \   'levels': g:lsp_ccls_levels,
     \ }
-    let l:Handler = function('s:make_tree', ['member', {}])
-    call ccls#lsp#request(&filetype, 'member', l:params, l:Handler)
+    let l:Handler = function('s:make_tree', ['$ccls/member', {}])
+    call ccls#lsp#request(&filetype, '$ccls/member', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#inheritance(derived) abort
@@ -206,7 +208,8 @@ function! ccls#messages#inheritance(derived) abort
     \   'hierarchy': v:false,
     \   'derived': a:derived,
     \ }
-    call ccls#lsp#request(&filetype, 'inheritance', l:params, function('s:handle_locations'))
+    let l:Handler = function('s:handle_locations')
+    call ccls#lsp#request(&filetype, '$ccls/inheritance', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#inheritance_hierarchy(derived) abort
@@ -217,8 +220,8 @@ function! ccls#messages#inheritance_hierarchy(derived) abort
     \   'levels': g:lsp_ccls_levels,
     \   'derived': a:derived,
     \ }
-    let l:Handler = function('s:make_tree', ['inheritance', {'derived': a:derived}])
-    call ccls#lsp#request(&filetype, 'inheritance', l:params, l:Handler)
+    let l:Handler = function('s:make_tree', ['$ccls/inheritance', {'derived': a:derived}])
+    call ccls#lsp#request(&filetype, '$ccls/inheritance', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#calls(callee) abort
@@ -229,7 +232,8 @@ function! ccls#messages#calls(callee) abort
     \   'hierarchy': v:false,
     \   'callee': a:callee,
     \ }
-    call ccls#lsp#request(&filetype, 'call', l:params, function('s:handle_locations'))
+    let l:Handler = function('s:handle_locations')
+    call ccls#lsp#request(&filetype, '$ccls/call', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#call_hierarchy(callee) abort
@@ -240,6 +244,6 @@ function! ccls#messages#call_hierarchy(callee) abort
     \   'levels': g:lsp_ccls_levels,
     \   'callee': a:callee,
     \ }
-    let l:Handler = function('s:make_tree', ['call', {'callee': a:callee}])
-    call ccls#lsp#request(&filetype, 'call', l:params, l:Handler)
+    let l:Handler = function('s:make_tree', ['$ccls/call', {'callee': a:callee}])
+    call ccls#lsp#request(&filetype, '$ccls/call', l:params, l:Handler)
 endfunction

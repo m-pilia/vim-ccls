@@ -141,6 +141,17 @@ g:lsp_ccls_orientation                                *g:lsp_ccls_orientation*
     let g:lsp_ccls_orientation = 'horizontal'
 <
 
+g:lsp_ccls_log_file                                      *g:lsp_ccls_log_file*
+    Type: |string|
+    Default: not set
+
+    If set, enables logging and specifies the location of the log file.
+
+    Example:
+>
+    let g:lsp_ccls_log_file = expand('~/my_log_file.txt')
+<
+
 ==============================================================================
 Commands                                                *vim-lsp-cclscommands*
 
@@ -156,7 +167,7 @@ LspCclsDerived                                                *LspCclsDerived*
 
 Get a list of derived classes for the symbol under the cursor.
 
-LspCclsDerivedHierarchy                                    *LspCclsBaseHierarchy*
+LspCclsDerivedHierarchy                                 *LspCclsBaseHierarchy*
 
 Get a tree of inheritance descendants for the symbol under cursor.
 

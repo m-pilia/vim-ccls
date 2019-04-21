@@ -127,13 +127,10 @@ Debugging
 =========
 
 If you encounter any problem, the first step for troubleshooting is to enable
-logging in your LS client. For additional information about vim-lsc, please see
-|lsc-debugging|. For vim-lsp, it is possible to easily get debug information in
-a log file by setting the following variables:
+logging, by setting the following variable:
 
 ```vim
-let g:lsp_log_verbose = 1
-let g:lsp_log_file = expand('~/vim-lsp.log')
+let g:lsp_ccls_log_file = expand('~/my_log_file.txt')
 ```
 
 License
