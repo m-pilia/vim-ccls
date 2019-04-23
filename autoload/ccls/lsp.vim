@@ -44,7 +44,7 @@ endfunction
 
 " Handle a response from coc.nvim
 function! s:coc_handler(handler, error, data) abort
-    call s:log('Incoming', 'coc.nvim', a:data ? a:data : a:error)
+    call s:log('Incoming', 'coc.nvim', !!a:error ? a:error : a:data)
     if a:error
         call s:warning('LSP error')
         return
