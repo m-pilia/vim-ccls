@@ -34,8 +34,7 @@ function! s:lcn_handler(handler, data) abort
     call s:log('Incoming', 'LanguageClient-neovim', a:data)
     if type(a:data) != v:t_dict ||
     \  has_key(a:data, 'error') ||
-    \  !has_key(a:data, 'result') ||
-    \  type(a:data.result) != v:t_dict
+    \  !has_key(a:data, 'result')
         call s:warning('LSP error')
         return
     endif
