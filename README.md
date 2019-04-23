@@ -1,11 +1,12 @@
-vim-lsp-ccls: LSP extension for the ccls Language Server
+vim-lsp-ccls: vim plugin for the ccls Language Server
 ===============================================================
 [![Travis CI Build Status](https://travis-ci.org/m-pilia/vim-lsp-ccls.svg?branch=master)](https://travis-ci.org/m-pilia/vim-lsp-ccls)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/m-pilia/disptools/blob/master/LICENSE)
 
 This plugin supports some additional methods provided by
 [ccls](https://github.com/MaskRay/ccls), which are not part of the standard
 Language Server Protocol (LSP). It does not implement a LSP client, but it
-relies on an existing LSP client, adding on top of it the ccls-specific
+relies on an existing LSP plugin, adding on top of it the ccls-specific
 features. Currently supported LSP clients are:
 
 * [coc.nvim](https://github.com/neoclide/coc.nvim)
