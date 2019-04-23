@@ -1,25 +1,29 @@
 Before:
-  let b:script = 'autoload/ccls/lsp.vim'
   let b:tmp_dir = has('win32') ? expand('%TEMP%\') : '/tmp/'
   let b:lsp_ccls_log_file = b:tmp_dir . 'vim_lsp_ccls.log'
 
   source test/utils.vim
+
+  let b:Log = GetFunction('autoload/ccls/lsp.vim', 'log')
 
 After:
   if exists('b:lsp_ccls_log_file')
     call system((has('win32') ? 'del ' : 'rm -f ') . b:lsp_ccls_log_file)
   endif
 
-  unlet! b:script
   unlet! b:tmp_dir
   unlet! b:lsp_ccls_log_file
   unlet! g:lsp_ccls_log_file
+  unlet! b:Log
+  unlet! args
+  unlet! file_content
+  unlet! result
 
 Execute(Test s:log with log file set):
   let args = ['aaa', 'bbb', {'ccc': 'ddd'}]
 
   let g:lsp_ccls_log_file = b:lsp_ccls_log_file
-  call Call(b:script, 'log', args[0], args[1], args[2])
+  call b:Log(args[0], args[1], args[2])
 
   Assert filereadable(b:lsp_ccls_log_file)
 
@@ -31,6 +35,6 @@ Execute(Test s:log with log file set):
 Execute(Test s:log with log file not set):
   unlet! g:lsp_ccls_log_file
 
-  call Call(b:script, 'log', 'foo')
+  call b:Log('foo')
 
   Assert !filereadable(b:lsp_ccls_log_file)

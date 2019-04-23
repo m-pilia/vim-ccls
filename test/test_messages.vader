@@ -2,8 +2,16 @@ Before:
   let b:script = 'autoload/ccls/messages.vim'
   source test/utils.vim
 
+  let b:Path2uri = GetFunction(b:script, 'path2uri')
+  let b:Uri2path = GetFunction(b:script, 'uri2path')
+
 After:
   unlet! b:script
+  unlet! b:Path2uri
+  unlet! b:Uri2path
+  unlet! path
+  unlet! expected
+  unlet! uri
 
 Execute(Test s:path2uri):
   if has('win32')
@@ -14,7 +22,7 @@ Execute(Test s:path2uri):
     let expected = 'file:///fo%C3%B2/b%C3%A4r/file.cpp'
   endif
 
-  let uri = Call(b:script, 'path2uri', path)
+  let uri = b:Path2uri(path)
 
   AssertEqual expected, uri
 
@@ -27,6 +35,6 @@ Execute(Test s:uri2path):
     let expected = '/foò/bär/file.cpp'
   endif
 
-  let path = Call(b:script, 'uri2path', uri)
+  let path = b:Uri2path(uri)
 
   AssertEqual expected, path
