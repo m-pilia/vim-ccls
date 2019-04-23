@@ -114,7 +114,7 @@ function! s:make_children(parent_id, level, children_data) abort
             let l:Lazy_open = function('s:lazy_open_callback', [l:child.id])
         endif
 
-        let l:node = b:yggdrasil_tree.insert(a:parent_id, l:name, l:Callback, l:Lazy_open)
+        let l:node = b:yggdrasil_tree.insert(l:name, l:Callback, l:Lazy_open, a:parent_id)
 
         " Recursive call to create children
         if l:child.numChildren > 0 && a:level < g:lsp_ccls_levels
@@ -127,8 +127,7 @@ endfunction
 function! s:make_tree(method, extra_params, data) abort
     let l:filetype = &filetype
 
-    call yggdrasil#tree#new(a:data.name,
-    \                       g:lsp_ccls_size,
+    call yggdrasil#tree#new(g:lsp_ccls_size,
     \                       g:lsp_ccls_position,
     \                       g:lsp_ccls_orientation)
 
@@ -138,7 +137,8 @@ function! s:make_tree(method, extra_params, data) abort
     let b:yggdrasil_tree['extra_params'] = a:extra_params
     let b:yggdrasil_tree['method'] = a:method
 
-    call s:make_children('0', 1, a:data.children)
+    call s:make_children(v:null, 0, [a:data])
+    let b:yggdrasil_tree.root.label = a:data.name
     call b:yggdrasil_tree.render()
 endfunction
 

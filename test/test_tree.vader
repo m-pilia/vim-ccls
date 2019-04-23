@@ -2,35 +2,62 @@ After:
   unlet! b:yggdrasil_tree
 
 Execute(Test yggdrasil#tree#new):
-  call yggdrasil#tree#new('foobar', 30, 'vertical', 'topleft')
+  call yggdrasil#tree#new(30, 'vertical', 'topleft')
 
   AssertEqual 'yggdrasil', &ft
   AssertEqual bufnr('.'), b:yggdrasil_tree.bufnr
-  AssertEqual 0, b:yggdrasil_tree.maxid
+  AssertEqual -1, b:yggdrasil_tree.maxid
+  AssertEqual {}, b:yggdrasil_tree.root
 
 Execute(Test yggdrasil#tree#insert):
   let tree = {
     \ 'bufnr': 0,
-    \ 'maxid': 0,
-    \ 'root': yggdrasil#node#new(0, 'foo', {}, v:null, v:null),
+    \ 'maxid': -1,
+    \ 'root': {},
     \ 'insert': function('yggdrasil#tree#insert'),
     \ }
 
-  call tree.insert(0, 'bar', v:null, v:null)
+  call tree.insert('bar', 'callback', 'lazy_open')
+
+  AssertEqual 0, tree.maxid
+  AssertEqual 0, len(tree.root.children)
+  AssertEqual 0, tree.root.id
+  AssertEqual 'bar', tree.root.label
+  AssertEqual 'callback', tree.root.callback
+  AssertEqual 'lazy_open', tree.root.lazy_open
+
+  call tree.insert('baz1', v:null, v:null, 0)
 
   AssertEqual 1, tree.maxid
   AssertEqual 1, len(tree.root.children)
+  AssertEqual 0, len(tree.root.children[0].children)
   AssertEqual 1, tree.root.children[0].id
-  AssertEqual 'bar', tree.root.children[0].label
+  AssertEqual 'baz1', tree.root.children[0].label
   AssertEqual v:null, tree.root.children[0].callback
   AssertEqual v:null, tree.root.children[0].lazy_open
 
-  call tree.insert(1, 'baz', v:null, v:null)
+  call tree.insert('baz2', 'new_cb', 'new_lo', 0)
 
   AssertEqual 2, tree.maxid
+  AssertEqual 2, len(tree.root.children)
+  AssertEqual 0, len(tree.root.children[0].children)
+  AssertEqual 0, len(tree.root.children[1].children)
+  AssertEqual 1, tree.root.children[0].id
+  AssertEqual 'baz1', tree.root.children[0].label
+  AssertEqual v:null, tree.root.children[0].callback
+  AssertEqual v:null, tree.root.children[0].lazy_open
+  AssertEqual 2, tree.root.children[1].id
+  AssertEqual 'baz2', tree.root.children[1].label
+  AssertEqual 'new_cb', tree.root.children[1].callback
+  AssertEqual 'new_lo', tree.root.children[1].lazy_open
+
+  call tree.insert('foo', 'root_cb', 'root_lo')
+
+  AssertEqual 3, tree.maxid
   AssertEqual 1, len(tree.root.children)
-  AssertEqual 1, len(tree.root.children[0].children)
-  AssertEqual 2, tree.root.children[0].children[0].id
-  AssertEqual 'baz', tree.root.children[0].children[0].label
-  AssertEqual v:null, tree.root.children[0].children[0].callback
-  AssertEqual v:null, tree.root.children[0].children[0].lazy_open
+  AssertEqual 2, len(tree.root.children[0].children)
+  AssertEqual 3, tree.root.id
+  AssertEqual 0, tree.root.children[0].id
+  AssertEqual 'foo', tree.root.label
+  AssertEqual 'root_cb', tree.root.callback
+  AssertEqual 'root_lo', tree.root.lazy_open
