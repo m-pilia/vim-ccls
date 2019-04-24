@@ -1,19 +1,53 @@
 Before:
   let b:script = 'autoload/ccls/messages.vim'
+  unlet! g:lsp_ccls_levels
+  unlet! g:lsp_ccls_close_on_jump
   source test/utils.vim
-
-  let b:Path2uri = GetFunction(b:script, 'path2uri')
-  let b:Uri2path = GetFunction(b:script, 'uri2path')
+  source test/mock/ccls.vim
+  source test/messages_fixtures.vim
 
 After:
+  bufdo bd
+  normal <c-w><c-o>
+
   unlet! b:script
-  unlet! b:Path2uri
-  unlet! b:Uri2path
+  unlet! Path2uri
+  unlet! Uri2path
+  unlet! Text_document_identifier
+  unlet! Position
+  unlet! Jump_to
   unlet! path
   unlet! expected
   unlet! uri
+  unlet! result
+  unlet! row
+  unlet! col
+  unlet! node
+  unlet! position
+
+  if exists('*lsc#server#call')
+    delfunction lsc#server#call
+  endif
+  if exists('*lsp#send_request')
+    delfunction lsp#send_request
+  endif
+  if exists('*lsp#get_server_names')
+    delfunction lsp#get_server_names
+  endif
+  if exists('*lsp#client#is_error')
+    delfunction lsp#client#is_error
+  endif
+  if exists('*LanguageClient#Call')
+    delfunction LanguageClient#Call
+  endif
+  if exists('*CocRequestAsync')
+    delfunction CocRequestAsync
+  endif
+
 
 Execute(Test s:path2uri):
+  let Path2uri = GetFunction(b:script, 'path2uri')
+
   if has('win32')
     let path = 'C:\foò\bär\file.cpp'
     let expected = 'file://C:\fo%C3%B2\b%C3%A4r\file.cpp'
@@ -22,11 +56,14 @@ Execute(Test s:path2uri):
     let expected = 'file:///fo%C3%B2/b%C3%A4r/file.cpp'
   endif
 
-  let uri = b:Path2uri(path)
+  let uri = Path2uri(path)
 
   AssertEqual expected, uri
 
+
 Execute(Test s:uri2path):
+  let Uri2path = GetFunction(b:script, 'uri2path')
+
   if has('win32')
     let uri = 'file://C:\fo%C3%B2\b%C3%A4r\file.cpp'
     let expected = 'C:\foò\bär\file.cpp'
@@ -35,6 +72,398 @@ Execute(Test s:uri2path):
     let expected = '/foò/bär/file.cpp'
   endif
 
-  let path = b:Uri2path(uri)
+  let path = Uri2path(uri)
 
   AssertEqual expected, path
+
+
+Execute(Test s:text_document_identifier):
+  let Text_document_identifier = GetFunction(b:script, 'text_document_identifier')
+
+  edit test/example.cpp
+
+  let result = Text_document_identifier()
+
+  if has('win32')
+    Assert match(result.uri, 'file://[A-Z]:.*\test\example.cpp') >= 0
+  else
+    Assert match(result.uri, 'file:///.*/test/example.cpp') >= 0
+  endif
+
+
+Execute(Test s:position):
+  let Position = GetFunction(b:script, 'position')
+
+  edit test/example.cpp
+
+  let row = 5
+  let col = 6
+  call cursor(row, col)
+
+  let position = Position()
+
+  AssertEqual row - 1, position.line
+  AssertEqual col - 1, position.character
+
+
+Execute(Test s:jump_to with g:lsp_ccls_close_on_jump = 0):
+  let Jump_to = GetFunction(b:script, 'jump_to')
+
+  let g:lsp_ccls_close_on_jump = 0
+
+  call Test_jump_to(Jump_to)
+
+  AssertEqual 2, len(getbufinfo({'bufloaded': 1}))
+
+
+Execute(Test s:jump_to with g:lsp_ccls_close_on_jump = 1):
+  let Jump_to = GetFunction(b:script, 'jump_to')
+
+  let g:lsp_ccls_close_on_jump = 1
+
+  call Test_jump_to(Jump_to)
+
+  AssertEqual 1, len(getbufinfo({'bufloaded': 1}))
+
+
+" ccls#messages#vars
+
+
+Execute(Test ccls#messages#vars with vim-lsc backend):
+  source test/mock/lsc/server.vim
+
+  call Test_locations(function('ccls#messages#vars'))
+
+
+Execute(Test ccls#messages#vars with vim-lsp backend):
+  source test/mock/lsp.vim
+  source test/mock/lsp/client.vim
+
+  call Test_locations(function('ccls#messages#vars'))
+
+
+Execute(Test ccls#messages#vars with LanguageClient-neovim backend):
+  source test/mock/LanguageClient.vim
+
+  call Test_locations(function('ccls#messages#vars'))
+
+
+Execute(Test ccls#messages#vars with coc.nvim backend):
+  source test/mock/coc.vim
+
+  call Test_locations(function('ccls#messages#vars'))
+
+
+" ccls#messages#members
+
+
+Execute(Test ccls#messages#members with vim-lsc backend):
+  source test/mock/lsc/server.vim
+
+  call Test_locations(function('ccls#messages#members'))
+
+
+Execute(Test ccls#messages#members with vim-lsp backend):
+  source test/mock/lsp.vim
+  source test/mock/lsp/client.vim
+
+  call Test_locations(function('ccls#messages#members'))
+
+
+Execute(Test ccls#messages#members with LanguageClient-neovim backend):
+  source test/mock/LanguageClient.vim
+
+  call Test_locations(function('ccls#messages#members'))
+
+
+Execute(Test ccls#messages#members with coc.nvim backend):
+  source test/mock/coc.vim
+
+  call Test_locations(function('ccls#messages#members'))
+
+
+" ccls#messages#inheritance
+
+
+Execute(Test ccls#messages#inheritance with vim-lsc backend):
+  source test/mock/lsc/server.vim
+
+  call Test_locations(function('ccls#messages#inheritance', [v:false]))
+  call Test_locations(function('ccls#messages#inheritance', [v:true]))
+
+
+Execute(Test ccls#messages#inheritance with vim-lsp backend):
+  source test/mock/lsp.vim
+  source test/mock/lsp/client.vim
+
+  call Test_locations(function('ccls#messages#inheritance', [v:false]))
+  call Test_locations(function('ccls#messages#inheritance', [v:true]))
+
+
+Execute(Test ccls#messages#inheritance with LanguageClient-neovim backend):
+  source test/mock/LanguageClient.vim
+
+  call Test_locations(function('ccls#messages#inheritance', [v:false]))
+  call Test_locations(function('ccls#messages#inheritance', [v:true]))
+
+
+Execute(Test ccls#messages#inheritance with coc.nvim backend):
+  source test/mock/coc.vim
+
+  call Test_locations(function('ccls#messages#inheritance', [v:false]))
+  call Test_locations(function('ccls#messages#inheritance', [v:true]))
+
+
+" ccls#messages#calls
+
+
+Execute(Test ccls#messages#calls with vim-lsc backend):
+  source test/mock/lsc/server.vim
+
+  call Test_locations(function('ccls#messages#calls', [v:false]))
+  call Test_locations(function('ccls#messages#calls', [v:true]))
+
+
+Execute(Test ccls#messages#calls with vim-lsp backend):
+  source test/mock/lsp.vim
+  source test/mock/lsp/client.vim
+
+  call Test_locations(function('ccls#messages#calls', [v:false]))
+  call Test_locations(function('ccls#messages#calls', [v:true]))
+
+
+Execute(Test ccls#messages#calls with LanguageClient-neovim backend):
+  source test/mock/LanguageClient.vim
+
+  call Test_locations(function('ccls#messages#calls', [v:false]))
+  call Test_locations(function('ccls#messages#calls', [v:true]))
+
+
+Execute(Test ccls#messages#calls with coc.nvim backend):
+  source test/mock/coc.vim
+
+  call Test_locations(function('ccls#messages#calls', [v:false]))
+  call Test_locations(function('ccls#messages#calls', [v:true]))
+
+
+" Call hierarchy
+
+
+Execute(Test ccls#messages#call_hierarchy with vim-lsc backend and g:lsp_ccls_levels = 1):
+  source test/mock/lsc/server.vim
+
+  let g:lsp_ccls_levels = 1
+
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+
+
+Execute(Test ccls#messages#call_hierarchy with vim-lsc backend and g:lsp_ccls_levels = 2):
+  source test/mock/lsc/server.vim
+
+  let g:lsp_ccls_levels = 2
+
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+
+
+Execute(Test ccls#messages#call_hierarchy with vim-lsp backend and g:lsp_ccls_levels = 1):
+  source test/mock/lsp.vim
+  source test/mock/lsp/client.vim
+
+  let g:lsp_ccls_levels = 1
+
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+
+
+Execute(Test ccls#messages#call_hierarchy with vim-lsp backend and g:lsp_ccls_levels = 2):
+  source test/mock/lsp.vim
+  source test/mock/lsp/client.vim
+
+  let g:lsp_ccls_levels = 2
+
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+
+
+Execute(Test ccls#messages#call_hierarchy with LanguageClient-neovim backend and g:lsp_ccls_levels = 1):
+  source test/mock/LanguageClient.vim
+
+  let g:lsp_ccls_levels = 1
+
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+
+
+Execute(Test ccls#messages#call_hierarchy with LanguageClient-neovim backend and g:lsp_ccls_levels = 2):
+  source test/mock/LanguageClient.vim
+
+  let g:lsp_ccls_levels = 2
+
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+
+
+Execute(Test ccls#messages#call_hierarchy with coc.nvim backend and g:lsp_ccls_levels = 1):
+  source test/mock/coc.vim
+
+  let g:lsp_ccls_levels = 1
+
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+
+
+Execute(Test ccls#messages#call_hierarchy with coc.nvim backend and g:lsp_ccls_levels = 2):
+  source test/mock/coc.vim
+
+  let g:lsp_ccls_levels = 2
+
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+
+
+" Member hierarchy
+
+
+Execute(Test ccls#messages#member_hierarchy with vim-lsc backend and g:lsp_ccls_levels = 1):
+  source test/mock/lsc/server.vim
+
+  let g:lsp_ccls_levels = 1
+
+  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+
+
+Execute(Test ccls#messages#member_hierarchy with vim-lsc backend and g:lsp_ccls_levels = 2):
+  source test/mock/lsc/server.vim
+
+  let g:lsp_ccls_levels = 2
+
+  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+
+
+Execute(Test ccls#messages#member_hierarchy with vim-lsp backend and g:lsp_ccls_levels = 1):
+  source test/mock/lsp.vim
+  source test/mock/lsp/client.vim
+
+  let g:lsp_ccls_levels = 1
+
+  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+
+
+Execute(Test ccls#messages#member_hierarchy with vim-lsp backend and g:lsp_ccls_levels = 2):
+  source test/mock/lsp.vim
+  source test/mock/lsp/client.vim
+
+  let g:lsp_ccls_levels = 2
+
+  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+
+
+Execute(Test ccls#messages#member_hierarchy with LanguageClient-neovim backend and g:lsp_ccls_levels = 1):
+  source test/mock/LanguageClient.vim
+
+  let g:lsp_ccls_levels = 1
+
+  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+
+
+Execute(Test ccls#messages#member_hierarchy with LanguageClient-neovim backend and g:lsp_ccls_levels = 2):
+  source test/mock/LanguageClient.vim
+
+  let g:lsp_ccls_levels = 2
+
+  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+
+
+Execute(Test ccls#messages#member_hierarchy with coc.nvim backend and g:lsp_ccls_levels = 1):
+  source test/mock/coc.vim
+
+  let g:lsp_ccls_levels = 1
+
+  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+
+
+Execute(Test ccls#messages#member_hierarchy with coc.nvim backend and g:lsp_ccls_levels = 2):
+  source test/mock/coc.vim
+
+  let g:lsp_ccls_levels = 2
+
+  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+
+
+" Inheritance hierarchy
+
+
+Execute(Test ccls#messages#inheritance_hierarchy with vim-lsc backend and g:lsp_ccls_levels = 1):
+  source test/mock/lsc/server.vim
+
+  let g:lsp_ccls_levels = 1
+
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+
+
+Execute(Test ccls#messages#inheritance_hierarchy with vim-lsc backend and g:lsp_ccls_levels = 2):
+  source test/mock/lsc/server.vim
+
+  let g:lsp_ccls_levels = 2
+
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+
+
+Execute(Test ccls#messages#inheritance_hierarchy with vim-lsp backend and g:lsp_ccls_levels = 1):
+  source test/mock/lsp.vim
+  source test/mock/lsp/client.vim
+
+  let g:lsp_ccls_levels = 1
+
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+
+
+Execute(Test ccls#messages#inheritance_hierarchy with vim-lsp backend and g:lsp_ccls_levels = 2):
+  source test/mock/lsp.vim
+  source test/mock/lsp/client.vim
+
+  let g:lsp_ccls_levels = 2
+
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+
+
+Execute(Test ccls#messages#inheritance_hierarchy with LanguageClient-neovim backend and g:lsp_ccls_levels = 1):
+  source test/mock/LanguageClient.vim
+
+  let g:lsp_ccls_levels = 1
+
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+
+
+Execute(Test ccls#messages#inheritance_hierarchy with LanguageClient-neovim backend and g:lsp_ccls_levels = 2):
+  source test/mock/LanguageClient.vim
+
+  let g:lsp_ccls_levels = 2
+
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+
+
+Execute(Test ccls#messages#inheritance_hierarchy with coc.nvim backend and g:lsp_ccls_levels = 1):
+  source test/mock/coc.vim
+
+  let g:lsp_ccls_levels = 1
+
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+
+
+Execute(Test ccls#messages#inheritance_hierarchy with coc.nvim backend and g:lsp_ccls_levels = 2):
+  source test/mock/coc.vim
+
+  let g:lsp_ccls_levels = 2
+
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
