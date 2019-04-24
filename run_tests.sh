@@ -2,6 +2,13 @@
 
 set -xeuo pipefail
 
+# Profiling file (no profiling if empty)
+profile_file=
+profile_prefix=''
+if [ $# -gt 0 ] && [ "$1" == "--profile" ]; then
+    profile_prefix='profile_file'
+fi
+
 # Using the Docker image developed for ALE
 docker_image=w0rp/ale
 docker_image_id=67896c9c2c0f
@@ -17,11 +24,19 @@ exit_status=0
 
 # Run tests
 for vim in ${vim_binaries}; do
+
+    # Collect profiling data if an output file name is provided
+    if [ "${profile_prefix}" != '' ]; then
+        profile_file="${profile_prefix}_${vim}"
+    fi
+
     find test -name '*.swp' -delete
+
     docker run \
         --rm \
         -a stderr \
         -e VADER_OUTPUT_FILE=/dev/stderr \
+        -e VIM_PROFILE_FILE="${profile_file}" \
         -v "$PWD:/testplugin" \
         -v "$PWD/test:/home"\
         -w /testplugin \

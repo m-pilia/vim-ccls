@@ -3,5 +3,15 @@ sudo: required
 services:
     - docker
 language: generic
+install:
+    - pip install --user covimerage==0.1.5
 script: |
-    ./run_tests.sh
+    ./run_tests.sh --profile
+after_success: |
+    set -eo pipefail
+    profile_file=$(ls | grep 'profile_file' | sort | tail -n 1)
+    python -m covimerage write_coverage "${profile_file}"
+    sed -i "s,/testplugin/,$PWD/,g" .coverage_covimerage
+    python -m covimerage -vv xml
+    python -m covimerage report -m
+    bash <(curl -s https://codecov.io/bash) -X search -X gcov -X coveragepy -f coverage.xml

@@ -1,7 +1,8 @@
 vim-lsp-ccls: vim plugin for the ccls Language Server
 ===============================================================
 [![Travis CI Build Status](https://travis-ci.org/m-pilia/vim-lsp-ccls.svg?branch=master)](https://travis-ci.org/m-pilia/vim-lsp-ccls)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/m-pilia/disptools/blob/master/LICENSE)
+[![codecov](https://codecov.io/gh/m-pilia/vim-lsp-ccls/branch/master/graph/badge.svg)](https://codecov.io/gh/m-pilia/vim-lsp-ccls/branch/master)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/m-pilia/vim-lsp-ccls/blob/master/LICENSE)
 
 This plugin supports some additional methods provided by
 [ccls](https://github.com/MaskRay/ccls), which are not part of the standard
