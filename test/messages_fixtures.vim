@@ -43,6 +43,12 @@ function! Test_locations(function) abort
     endfor
 endfunction
 
+function! s:assert_inner_nodes(expected_label)
+    AssertEqual 2, len(b:yggdrasil_tree.root.children[1].children)
+    AssertEqual a:expected_label . '_3', b:yggdrasil_tree.root.children[1].children[0].label
+    AssertEqual a:expected_label . '_4', b:yggdrasil_tree.root.children[1].children[1].label
+endfunction
+
 function! Test_hierarchy(function, expected_method, expected_label) abort
     edit test/example.cpp
 
@@ -63,10 +69,28 @@ function! Test_hierarchy(function, expected_method, expected_label) abort
             AssertEqual 0, len(b:yggdrasil_tree.root.children[1].children)
             AssertEqual type({->0}), type(b:yggdrasil_tree.root.children[1].lazy_open)
         else
-            AssertEqual 2, len(b:yggdrasil_tree.root.children[1].children)
             AssertNotEqual type({->0}), type(b:yggdrasil_tree.root.children[1].lazy_open)
-            AssertEqual a:expected_label . '_3', b:yggdrasil_tree.root.children[1].children[0].label
-            AssertEqual a:expected_label . '_4', b:yggdrasil_tree.root.children[1].children[1].label
+            call s:assert_inner_nodes(a:expected_label)
         endif
     endif
+endfunction
+
+function! Test_lazy_open(expected_label) abort
+    let l:collapsed = 0
+    let l:recursive = 0
+
+    " Expand root node
+    call b:yggdrasil_tree.set_collapsed_under_cursor(l:collapsed, l:recursive)
+
+    " Move over the collapsed node with two children (node_2)
+    call search(a:expected_label . '_2')
+
+    AssertEqual b:yggdrasil_tree.root.children[1].id, b:yggdrasil_tree.get_node_id_under_cursor().id,
+
+    " Expand lazily the inner node with two children (node_2)
+    call b:yggdrasil_tree.set_collapsed_under_cursor(l:collapsed, l:recursive)
+
+    AssertNotEqual type({->0}), type(b:yggdrasil_tree.root.children[1].lazy_open),
+
+    call s:assert_inner_nodes(a:expected_label)
 endfunction

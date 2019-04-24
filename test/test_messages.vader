@@ -255,7 +255,10 @@ Execute(Test ccls#messages#call_hierarchy with vim-lsc backend and g:lsp_ccls_le
   let g:lsp_ccls_levels = 1
 
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
 
 
 Execute(Test ccls#messages#call_hierarchy with vim-lsc backend and g:lsp_ccls_levels = 2):
@@ -264,7 +267,10 @@ Execute(Test ccls#messages#call_hierarchy with vim-lsc backend and g:lsp_ccls_le
   let g:lsp_ccls_levels = 2
 
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
 
 
 Execute(Test ccls#messages#call_hierarchy with vim-lsp backend and g:lsp_ccls_levels = 1):
@@ -274,7 +280,10 @@ Execute(Test ccls#messages#call_hierarchy with vim-lsp backend and g:lsp_ccls_le
   let g:lsp_ccls_levels = 1
 
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
 
 
 Execute(Test ccls#messages#call_hierarchy with vim-lsp backend and g:lsp_ccls_levels = 2):
@@ -284,7 +293,10 @@ Execute(Test ccls#messages#call_hierarchy with vim-lsp backend and g:lsp_ccls_le
   let g:lsp_ccls_levels = 2
 
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
 
 
 Execute(Test ccls#messages#call_hierarchy with LanguageClient-neovim backend and g:lsp_ccls_levels = 1):
@@ -293,7 +305,10 @@ Execute(Test ccls#messages#call_hierarchy with LanguageClient-neovim backend and
   let g:lsp_ccls_levels = 1
 
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
 
 
 Execute(Test ccls#messages#call_hierarchy with LanguageClient-neovim backend and g:lsp_ccls_levels = 2):
@@ -302,7 +317,10 @@ Execute(Test ccls#messages#call_hierarchy with LanguageClient-neovim backend and
   let g:lsp_ccls_levels = 2
 
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
 
 
 Execute(Test ccls#messages#call_hierarchy with coc.nvim backend and g:lsp_ccls_levels = 1):
@@ -311,7 +329,10 @@ Execute(Test ccls#messages#call_hierarchy with coc.nvim backend and g:lsp_ccls_l
   let g:lsp_ccls_levels = 1
 
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
 
 
 Execute(Test ccls#messages#call_hierarchy with coc.nvim backend and g:lsp_ccls_levels = 2):
@@ -320,7 +341,10 @@ Execute(Test ccls#messages#call_hierarchy with coc.nvim backend and g:lsp_ccls_l
   let g:lsp_ccls_levels = 2
 
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+  call Test_lazy_open('node')
 
 
 " Member hierarchy
@@ -332,6 +356,7 @@ Execute(Test ccls#messages#member_hierarchy with vim-lsc backend and g:lsp_ccls_
   let g:lsp_ccls_levels = 1
 
   call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+  call Test_lazy_open('field')
 
 
 Execute(Test ccls#messages#member_hierarchy with vim-lsc backend and g:lsp_ccls_levels = 2):
@@ -340,6 +365,7 @@ Execute(Test ccls#messages#member_hierarchy with vim-lsc backend and g:lsp_ccls_
   let g:lsp_ccls_levels = 2
 
   call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+  call Test_lazy_open('field')
 
 
 Execute(Test ccls#messages#member_hierarchy with vim-lsp backend and g:lsp_ccls_levels = 1):
@@ -349,6 +375,7 @@ Execute(Test ccls#messages#member_hierarchy with vim-lsp backend and g:lsp_ccls_
   let g:lsp_ccls_levels = 1
 
   call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+  call Test_lazy_open('field')
 
 
 Execute(Test ccls#messages#member_hierarchy with vim-lsp backend and g:lsp_ccls_levels = 2):
@@ -358,6 +385,7 @@ Execute(Test ccls#messages#member_hierarchy with vim-lsp backend and g:lsp_ccls_
   let g:lsp_ccls_levels = 2
 
   call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+  call Test_lazy_open('field')
 
 
 Execute(Test ccls#messages#member_hierarchy with LanguageClient-neovim backend and g:lsp_ccls_levels = 1):
@@ -366,6 +394,7 @@ Execute(Test ccls#messages#member_hierarchy with LanguageClient-neovim backend a
   let g:lsp_ccls_levels = 1
 
   call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+  call Test_lazy_open('field')
 
 
 Execute(Test ccls#messages#member_hierarchy with LanguageClient-neovim backend and g:lsp_ccls_levels = 2):
@@ -374,6 +403,7 @@ Execute(Test ccls#messages#member_hierarchy with LanguageClient-neovim backend a
   let g:lsp_ccls_levels = 2
 
   call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+  call Test_lazy_open('field')
 
 
 Execute(Test ccls#messages#member_hierarchy with coc.nvim backend and g:lsp_ccls_levels = 1):
@@ -382,6 +412,7 @@ Execute(Test ccls#messages#member_hierarchy with coc.nvim backend and g:lsp_ccls
   let g:lsp_ccls_levels = 1
 
   call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+  call Test_lazy_open('field')
 
 
 Execute(Test ccls#messages#member_hierarchy with coc.nvim backend and g:lsp_ccls_levels = 2):
@@ -390,6 +421,7 @@ Execute(Test ccls#messages#member_hierarchy with coc.nvim backend and g:lsp_ccls
   let g:lsp_ccls_levels = 2
 
   call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+  call Test_lazy_open('field')
 
 
 " Inheritance hierarchy
@@ -401,7 +433,10 @@ Execute(Test ccls#messages#inheritance_hierarchy with vim-lsc backend and g:lsp_
   let g:lsp_ccls_levels = 1
 
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
 
 
 Execute(Test ccls#messages#inheritance_hierarchy with vim-lsc backend and g:lsp_ccls_levels = 2):
@@ -410,7 +445,10 @@ Execute(Test ccls#messages#inheritance_hierarchy with vim-lsc backend and g:lsp_
   let g:lsp_ccls_levels = 2
 
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
 
 
 Execute(Test ccls#messages#inheritance_hierarchy with vim-lsp backend and g:lsp_ccls_levels = 1):
@@ -420,7 +458,10 @@ Execute(Test ccls#messages#inheritance_hierarchy with vim-lsp backend and g:lsp_
   let g:lsp_ccls_levels = 1
 
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
 
 
 Execute(Test ccls#messages#inheritance_hierarchy with vim-lsp backend and g:lsp_ccls_levels = 2):
@@ -430,7 +471,10 @@ Execute(Test ccls#messages#inheritance_hierarchy with vim-lsp backend and g:lsp_
   let g:lsp_ccls_levels = 2
 
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
 
 
 Execute(Test ccls#messages#inheritance_hierarchy with LanguageClient-neovim backend and g:lsp_ccls_levels = 1):
@@ -439,7 +483,10 @@ Execute(Test ccls#messages#inheritance_hierarchy with LanguageClient-neovim back
   let g:lsp_ccls_levels = 1
 
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
 
 
 Execute(Test ccls#messages#inheritance_hierarchy with LanguageClient-neovim backend and g:lsp_ccls_levels = 2):
@@ -448,7 +495,10 @@ Execute(Test ccls#messages#inheritance_hierarchy with LanguageClient-neovim back
   let g:lsp_ccls_levels = 2
 
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
 
 
 Execute(Test ccls#messages#inheritance_hierarchy with coc.nvim backend and g:lsp_ccls_levels = 1):
@@ -457,7 +507,10 @@ Execute(Test ccls#messages#inheritance_hierarchy with coc.nvim backend and g:lsp
   let g:lsp_ccls_levels = 1
 
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
 
 
 Execute(Test ccls#messages#inheritance_hierarchy with coc.nvim backend and g:lsp_ccls_levels = 2):
@@ -466,4 +519,7 @@ Execute(Test ccls#messages#inheritance_hierarchy with coc.nvim backend and g:lsp
   let g:lsp_ccls_levels = 2
 
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
+
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+  call Test_lazy_open('node')
