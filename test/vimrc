@@ -10,3 +10,12 @@ filetype plugin indent on
 syntax on
 
 set nocompatible
+
+let s:profile_file = $VIM_PROFILE_FILE
+if has('profile') && !empty(s:profile_file)
+    execute 'profile start ' . s:profile_file
+    profile! file autoload/**.vim
+    profile! file ftplugin/**.vim
+    profile! file plugin/**.vim
+    profile! file syntax/**.vim
+endif
