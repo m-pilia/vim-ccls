@@ -61,16 +61,18 @@ function! s:jump_to(file, line, column, node) abort
 endfunction
 
 " Callback to append the retrieved children to a node and update the tree
-function! s:append_children(id, data) abort
+function! s:append_children(bufno, id, data) abort
+    silent execute 'b' . a:bufno
     call s:make_children(a:id, 1, a:data.children)
     call b:yggdrasil_tree.render()
 endfunction
 
 " Lazily fetch the children of a node
 function! s:lazy_open_callback(parent_id, node) abort
+    let l:bufno = b:yggdrasil_tree['buffer']
     let l:filetype = b:yggdrasil_tree['filetype']
     let l:method = b:yggdrasil_tree['method']
-    let l:Handler = {data -> s:append_children(a:node.id, data)}
+    let l:Handler = {data -> s:append_children(l:bufno, a:node.id, data)}
 
     let l:params = {
     \   'id': a:parent_id,
@@ -133,6 +135,7 @@ function! s:make_tree(method, extra_params, data) abort
 
     " Store additional information in the tree structure
     " to avoid having too many arguments in the callbacks
+    let b:yggdrasil_tree['buffer'] = bufnr('%')
     let b:yggdrasil_tree['filetype'] = l:filetype
     let b:yggdrasil_tree['extra_params'] = a:extra_params
     let b:yggdrasil_tree['method'] = a:method
