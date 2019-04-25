@@ -1,10 +1,7 @@
 Before:
   let b:tmp_dir = has('win32') ? expand('%TEMP%\') : '/tmp/'
   let b:ccls_log_file = b:tmp_dir . 'vim_ccls.log'
-
-  source test/utils.vim
-
-  let b:Log = GetFunction('autoload/ccls/lsp.vim', 'log')
+  let b:warning_text = 'This is a warning'
 
 After:
   if exists('b:ccls_log_file')
@@ -14,16 +11,17 @@ After:
   unlet! b:tmp_dir
   unlet! b:ccls_log_file
   unlet! g:ccls_log_file
-  unlet! b:Log
+  unlet! b:warning_text
   unlet! args
   unlet! file_content
   unlet! result
+  unlet! message_list
 
-Execute(Test s:log with log file set):
+Execute(Test ccls#util#log with log file set):
   let args = ['aaa', 'bbb', {'ccc': 'ddd'}]
 
   let g:ccls_log_file = b:ccls_log_file
-  call b:Log(args[0], args[1], args[2])
+  call ccls#util#log(args[0], args[1], args[2])
 
   Assert filereadable(b:ccls_log_file)
 
@@ -32,9 +30,16 @@ Execute(Test s:log with log file set):
 
   AssertEqual json_encode(args), result
 
-Execute(Test s:log with log file not set):
+Execute(Test ccls#util#log with log file not set):
   unlet! g:ccls_log_file
 
-  call b:Log('foo')
+  call ccls#util#log('foo')
 
   Assert !filereadable(b:ccls_log_file)
+
+Execute(Test ccls#util#warning):
+  call ccls#util#warning(b:warning_text)
+
+  let message_list = GetMessages()
+
+  AssertEqual 'vim-ccls: ' . b:warning_text, message_list[-1]

@@ -18,3 +18,11 @@ function! GetFunction(script, name) abort
         endif
     endfor
 endfunction
+
+" Get a list of echoed messages
+function! GetMessages() abort
+    redir => l:out
+    silent execute 'messages'
+    redir END
+    return split(l:out, '\n')
+endfunction

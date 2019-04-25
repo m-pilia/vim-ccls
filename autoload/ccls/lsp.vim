@@ -1,29 +1,14 @@
-" Print a warning message
-function! s:warning(message) abort
-    echohl WarningMsg
-    echom a:message
-    echohl None
-endfunction
-
-" Write arguments to the log file
-function! s:log(...) abort
-    if exists('g:ccls_log_file') && !empty(g:ccls_log_file)
-        let l:data = [strftime('%c') . ' | ' . json_encode(a:000)]
-        call writefile(l:data, g:ccls_log_file, 'a')
-    endif
-endfunction
-
 " Handle a response from vim-lsc
 function! s:vim_lsc_handler(handler, data) abort
-    call s:log('Incoming', 'vim-lsc', a:data)
+    call ccls#util#log('Incoming', 'vim-lsc', a:data)
     call a:handler(a:data)
 endfunction
 
 " Handle a response from vim-lsp
 function! s:vim_lsp_handler(handler, data) abort
-    call s:log('Incoming', 'vim-lsp', a:data)
+    call ccls#util#log('Incoming', 'vim-lsp', a:data)
     if lsp#client#is_error(a:data.response)
-        call s:warning('LSP error')
+        call ccls#util#warning('LSP error')
         return
     endif
     call a:handler(a:data.response.result)
@@ -31,11 +16,11 @@ endfunction
 
 " Handle a response from LanguageClient-neovim
 function! s:lcn_handler(handler, data) abort
-    call s:log('Incoming', 'LanguageClient-neovim', a:data)
+    call ccls#util#log('Incoming', 'LanguageClient-neovim', a:data)
     if type(a:data) != v:t_dict ||
     \  has_key(a:data, 'error') ||
     \  !has_key(a:data, 'result')
-        call s:warning('LSP error')
+        call ccls#util#warning('LSP error')
         return
     endif
     call a:handler(a:data.result)
@@ -43,9 +28,9 @@ endfunction
 
 " Handle a response from coc.nvim
 function! s:coc_handler(handler, error, data) abort
-    call s:log('Incoming', 'coc.nvim', !!a:error ? a:error : a:data)
+    call ccls#util#log('Incoming', 'coc.nvim', !!a:error ? a:error : a:data)
     if a:error
-        call s:warning('LSP error')
+        call ccls#util#warning('LSP error')
         return
     endif
     call a:handler(a:data)
@@ -59,7 +44,7 @@ function! ccls#lsp#request(filetype, method, params, handler) abort
     \   'params': a:params,
     \   'handler': string(a:handler)
     \ }
-    call s:log('Outgoing', l:log_data)
+    call ccls#util#log('Outgoing', l:log_data)
 
     if exists('*lsc#server#call')
         " Use vim-lsc
@@ -77,7 +62,7 @@ function! ccls#lsp#request(filetype, method, params, handler) abort
         " Use vim-lsp
         let l:available_servers = lsp#get_server_names()
         if len(l:available_servers) == 0 || count(l:available_servers, 'ccls') == 0
-            call s:warning('ccls language server unvailable')
+            call ccls#util#warning('ccls language server unvailable')
             return
         endif
 
@@ -89,6 +74,6 @@ function! ccls#lsp#request(filetype, method, params, handler) abort
 
         call lsp#send_request('ccls', l:request)
     else
-        call s:warning('No LSP plugin found!')
+        call ccls#util#warning('No LSP plugin found!')
     end
 endfunction
