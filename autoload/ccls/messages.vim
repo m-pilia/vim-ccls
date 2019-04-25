@@ -128,6 +128,11 @@ endfunction
 
 " Callback to create an Yggdrasil window
 function! s:make_tree(method, extra_params, data) abort
+    if type(a:data) != v:t_dict
+        call ccls#util#warning('No hierarchy for the object under cursor')
+        return
+    endif
+
     let l:filetype = &filetype
 
     call yggdrasil#tree#new(g:ccls_size,

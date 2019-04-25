@@ -16,6 +16,7 @@ After:
   unlet! Text_document_identifier
   unlet! Position
   unlet! Jump_to
+  unlet! Make_tree
   unlet! path
   unlet! expected
   unlet! uri
@@ -24,6 +25,9 @@ After:
   unlet! col
   unlet! node
   unlet! position
+  unlet! method
+  unlet! extra_params
+  unlet! data
 
   if exists('*lsc#server#call')
     delfunction lsc#server#call
@@ -523,3 +527,18 @@ Execute(Test ccls#messages#inheritance_hierarchy with coc.nvim backend and g:ccl
 
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
   call Test_lazy_open('node')
+
+
+" Invalid hierarchy
+
+Execute(Test s:make_tree with no valid symbol under cursor):
+  let Make_tree = GetFunction(b:script, 'make_tree')
+
+  let method = 0 " Irrelevant
+  let extra_params = {} " Irrelevant
+  let data = ''
+
+  call Make_tree(method, extra_params, data)
+
+  AssertNotEqual 'yggdrasil', &filetype
+  AssertEqual 'vim-ccls: No hierarchy for the object under cursor', GetMessages()[-1]

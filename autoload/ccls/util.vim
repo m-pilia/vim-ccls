@@ -1,5 +1,6 @@
 " Print a warning message
 function! ccls#util#warning(message) abort
+    redraw
     echohl WarningMsg
     echom 'vim-ccls: ' . a:message
     echohl None
