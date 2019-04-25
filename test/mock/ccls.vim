@@ -92,6 +92,14 @@ function! ccls#mock(method, params) abort
     let s:request_id += 1
 
     if has_key(a:params, 'hierarchy') && a:params.hierarchy
+
+        " Both id and kind are required to expand an inheritance node
+        if a:method ==# '$ccls/inheritance' &&
+        \  has_key(a:params, 'id') &&
+        \  !has_key(a:params, 'kind')
+            return v:null
+        endif
+
         let l:id = has_key(a:params, 'id') ? a:params.id : 0
         let l:node = s:make_node(l:id, a:method)
         call s:build_subtree(l:node, a:method, 1, a:params.levels)
