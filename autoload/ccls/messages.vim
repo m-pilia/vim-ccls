@@ -52,7 +52,7 @@ endfunction
 function! s:jump_to(file, line, column, node) abort
     let l:yggdrasil_bufno = bufnr('%')
     silent execute "normal! \<c-w>\<c-p>"
-    if g:lsp_ccls_close_on_jump
+    if g:ccls_close_on_jump
         silent execute 'bd' . l:yggdrasil_bufno
     endif
     let l:buffer = bufnr(a:file)
@@ -77,7 +77,7 @@ function! s:lazy_open_callback(parent_id, node) abort
     let l:params = {
     \   'id': a:parent_id,
     \   'hierarchy': v:true,
-    \   'levels': g:lsp_ccls_levels,
+    \   'levels': g:ccls_levels,
     \ }
     call extend(l:params, b:yggdrasil_tree.extra_params, 'force')
 
@@ -106,11 +106,11 @@ function! s:make_children(parent_id, level, children_data) abort
         " Do not fetch nodes beyond the requested depth
         " Create a callback to fetch the subtree lazily
         let l:Lazy_open = v:null
-        if l:child.numChildren > 0 && a:level >= g:lsp_ccls_levels
+        if l:child.numChildren > 0 && a:level >= g:ccls_levels
             let l:params = {
             \   'id': l:child.id,
             \   'hierarchy': v:true,
-            \   'levels': g:lsp_ccls_levels,
+            \   'levels': g:ccls_levels,
             \ }
             call extend(l:params, b:yggdrasil_tree.extra_params, 'force')
             let l:Lazy_open = function('s:lazy_open_callback', [l:child.id])
@@ -119,7 +119,7 @@ function! s:make_children(parent_id, level, children_data) abort
         let l:node = b:yggdrasil_tree.insert(l:name, l:Callback, l:Lazy_open, a:parent_id)
 
         " Recursive call to create children
-        if l:child.numChildren > 0 && a:level < g:lsp_ccls_levels
+        if l:child.numChildren > 0 && a:level < g:ccls_levels
             call s:make_children(l:node.id, a:level + 1, l:child.children)
         endif
     endfor
@@ -129,9 +129,9 @@ endfunction
 function! s:make_tree(method, extra_params, data) abort
     let l:filetype = &filetype
 
-    call yggdrasil#tree#new(g:lsp_ccls_size,
-    \                       g:lsp_ccls_position,
-    \                       g:lsp_ccls_orientation)
+    call yggdrasil#tree#new(g:ccls_size,
+    \                       g:ccls_position,
+    \                       g:ccls_orientation)
 
     " Store additional information in the tree structure
     " to avoid having too many arguments in the callbacks
@@ -197,7 +197,7 @@ function! ccls#messages#member_hierarchy() abort
     \   'textDocument': s:text_document_identifier(),
     \   'position': s:position(),
     \   'hierarchy': v:true,
-    \   'levels': g:lsp_ccls_levels,
+    \   'levels': g:ccls_levels,
     \ }
     let l:Handler = function('s:make_tree', ['$ccls/member', {}])
     call ccls#lsp#request(&filetype, '$ccls/member', l:params, l:Handler)
@@ -220,7 +220,7 @@ function! ccls#messages#inheritance_hierarchy(derived) abort
     \   'textDocument': s:text_document_identifier(),
     \   'position': s:position(),
     \   'hierarchy': v:true,
-    \   'levels': g:lsp_ccls_levels,
+    \   'levels': g:ccls_levels,
     \   'derived': a:derived,
     \ }
     let l:Handler = function('s:make_tree', ['$ccls/inheritance', {'derived': a:derived}])
@@ -244,7 +244,7 @@ function! ccls#messages#call_hierarchy(callee) abort
     \   'textDocument': s:text_document_identifier(),
     \   'position': s:position(),
     \   'hierarchy': v:true,
-    \   'levels': g:lsp_ccls_levels,
+    \   'levels': g:ccls_levels,
     \   'callee': a:callee,
     \ }
     let l:Handler = function('s:make_tree', ['$ccls/call', {'callee': a:callee}])

@@ -7,9 +7,9 @@ endfunction
 
 " Write arguments to the log file
 function! s:log(...) abort
-    if exists('g:lsp_ccls_log_file') && !empty(g:lsp_ccls_log_file)
+    if exists('g:ccls_log_file') && !empty(g:ccls_log_file)
         let l:data = [strftime('%c') . ' | ' . json_encode(a:000)]
-        call writefile(l:data, g:lsp_ccls_log_file, 'a')
+        call writefile(l:data, g:ccls_log_file, 'a')
     endif
 endfunction
 

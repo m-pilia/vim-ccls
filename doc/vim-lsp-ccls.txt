@@ -1,35 +1,35 @@
-*vim-lsp-ccls.txt*  Extension for the ccls language server.
-*vim-lsp-ccls*
+*vim-ccls.txt*  Extension for the ccls language server.
+*vim-ccls*
 
 ==============================================================================
-CONTENTS                                               *vim-lsp-ccls-contents*
+CONTENTS                                                   *vim-ccls-contents*
 
-    Introduction..................|vim-lsp-ccls-introduction|
-    Installation..................|vim-lsp-ccls-installation|
-    Options.......................|vim-lsp-ccls-options|
-      g:lsp_ccls_close_on_jump....|g:lsp_ccls_close_on_jump|
-      g:lsp_ccls_levels...........|g:lsp_ccls_levels|
-      g:lsp_ccls_size.............|g:lsp_ccls_size|
-      g:lsp_ccls_position.........|g:lsp_ccls_position|
-      g:lsp_ccls_orientation......|g:lsp_ccls_orientation|
-    Commands......................|vim-lsp-ccls-commands|
-      LspCclsVars.................|LspCclsVars|
-      LspCclsMembers..............|LspCclsMembers|
-      LspCclsMemberHierarchy......|LspCclsMemberHierarchy|
-      LspCclsBase.................|LspCclsBase|
-      LspCclsDerived..............|LspCclsDerived|
-      LspCclsBaseHierarchy........|LspCclsBaseHierarchy|
-      LspCclsDerivedHierarchy.....|LspCclsDerivedHierarchy|
-      LspCclsCallers..............|LspCclsCallers|
-      LspCclsCallees..............|LspCclsCallees|
-      LspCclsCallHierarchy........|LspCclsCallHierarchy|
-      LspCclsCalleeHierarchy......|LspCclsCalleeHierarchy|
-    Mappings......................|vim-lsp-ccls-mappings|
-    License.......................|vim-lsp-ccls-license|
+    Introduction..................|vim-ccls-introduction|
+    Installation..................|vim-ccls-installation|
+    Options.......................|vim-ccls-options|
+      g:ccls_close_on_jump........|g:ccls_close_on_jump|
+      g:ccls_levels...............|g:ccls_levels|
+      g:ccls_size.................|g:ccls_size|
+      g:ccls_position.............|g:ccls_position|
+      g:ccls_orientation..........|g:ccls_orientation|
+    Commands......................|vim-ccls-commands|
+      CclsVars....................|CclsVars|
+      CclsMembers.................|CclsMembers|
+      CclsMemberHierarchy.........|CclsMemberHierarchy|
+      CclsBase....................|CclsBase|
+      CclsDerived.................|CclsDerived|
+      CclsBaseHierarchy...........|CclsBaseHierarchy|
+      CclsDerivedHierarchy........|CclsDerivedHierarchy|
+      CclsCallers.................|CclsCallers|
+      CclsCallees.................|CclsCallees|
+      CclsCallHierarchy...........|CclsCallHierarchy|
+      CclsCalleeHierarchy.........|CclsCalleeHierarchy|
+    Mappings......................|vim-ccls-mappings|
+    License.......................|vim-ccls-license|
 
 
 ==============================================================================
-INTRODUCTION                                       *vim-lsp-ccls-introduction*
+INTRODUCTION                                           *vim-ccls-introduction*
 
 Language Server extension supporting additional, non-standard features of ccls,
 such as calls and hierarchies.
@@ -43,7 +43,7 @@ supported LSP clients are:
 * vim-lsp               (https://github.com/prabirshrestha/vim-lsp)
 
 ==============================================================================
-INSTALLATION                                       *vim-lsp-ccls-installation*
+INSTALLATION                                           *vim-ccls-installation*
 
 This plugin is implemented in pure VimScript, and it can be installed with
 any plugin manager.
@@ -54,7 +54,7 @@ configuration for the project
 (https://github.com/MaskRay/ccls/wiki/Project-Setup).
 
 One of the supported Language Server client plugins listed in
-|vim-lsp-ccls-introduction| needs to be installed and properly configured with
+|vim-ccls-introduction| needs to be installed and properly configured with
 ccls as language server in order for it to work.
 
 To install ccls and set up a project to use it in combination with coc.nvim,
@@ -67,9 +67,9 @@ To set up a project with vim-lsc, please refer to |lsc-setup| and, for advanced
 configuration, to |lsc-server-message_hooks|.
 
 ==============================================================================
-Options                                                      *vim-lsp-options*
+Options                                                     *vim-ccls-options*
 
-g:lsp_ccls_close_on_jump                            *g:lsp_ccls_close_on_jump*
+g:ccls_close_on_jump                                    *g:ccls_close_on_jump*
     Type: |Number|
     Default: `0`
 
@@ -79,10 +79,10 @@ g:lsp_ccls_close_on_jump                            *g:lsp_ccls_close_on_jump*
     Example:
 >
     " Automatically close tree window when jumping
-    let g:lsp_ccls_close_on_jump = 1
+    let g:ccls_close_on_jump = 1
 <
 
-g:lsp_ccls_levels                                          *g:lsp_ccls_levels*
+g:ccls_levels                                                *g:sp_ccls_levels*
     Type: |Number|
     Default: `1`
 
@@ -98,24 +98,24 @@ g:lsp_ccls_levels                                          *g:lsp_ccls_levels*
     Example:
 >
     " Fetch nodes up to 5 levels deep for each request
-    let g:lsp_ccls_levels = 5
+    let g:ccls_levels = 5
 <
 
-g:lsp_ccls_size                                              *g:lsp_ccls_size*
+g:ccls_size                                                      *g:ccls_size*
     Type: |Number|
     Default: `50`
 
     Size of the Yggdrasil window opened when showing a hierarchy tree.
     The size could be rows or columns, depending on whether the window is
-    horizontal or vertical (see |g:lsp_ccls_orientation|).
+    horizontal or vertical (see |g:ccls_orientation|).
 
     Example:
 >
     " Set a size of 40 for the window
-    let g:lsp_ccls_size = 40
+    let g:ccls_size = 40
 <
 
-g:lsp_ccls_position                                      *g:lsp_ccls_position*
+g:ccls_position                                              *g:ccls_position*
     Type: |String|
     Default: `topleft`
 
@@ -125,10 +125,10 @@ g:lsp_ccls_position                                      *g:lsp_ccls_position*
     Example:
 >
     " Place the tree windows on the bottom right on opening
-    let g:lsp_ccls_position = 'botright'
+    let g:ccls_position = 'botright'
 <
 
-g:lsp_ccls_orientation                                *g:lsp_ccls_orientation*
+g:ccls_orientation                                        *g:ccls_orientation*
     Type: |string|
     Default: `vertical`
 
@@ -138,10 +138,10 @@ g:lsp_ccls_orientation                                *g:lsp_ccls_orientation*
     Example:
 >
     " Create horizontal tree windows
-    let g:lsp_ccls_orientation = 'horizontal'
+    let g:ccls_orientation = 'horizontal'
 <
 
-g:lsp_ccls_log_file                                      *g:lsp_ccls_log_file*
+g:ccls_log_file                                              *g:ccls_log_file*
     Type: |string|
     Default: not set
 
@@ -149,65 +149,65 @@ g:lsp_ccls_log_file                                      *g:lsp_ccls_log_file*
 
     Example:
 >
-    let g:lsp_ccls_log_file = expand('~/my_log_file.txt')
+    let g:ccls_log_file = expand('~/my_log_file.txt')
 <
 
 ==============================================================================
-Commands                                                *vim-lsp-cclscommands*
+Commands                                                   *vim-ccls-commands*
 
-LspCclsBase                                                      *LspCclsBase*
+CclsBase                                                            *CclsBase*
 
 Get a list of base classes for the symbol under the cursor.
 
-LspCclsBaseHierarchy                                    *LspCclsBaseHierarchy*
+CclsBaseHierarchy                                          *CclsBaseHierarchy*
 
 Get a tree of inheritance ancestors for the symbol under cursor.
 
-LspCclsDerived                                                *LspCclsDerived*
+CclsDerived                                                      *CclsDerived*
 
 Get a list of derived classes for the symbol under the cursor.
 
-LspCclsDerivedHierarchy                                 *LspCclsBaseHierarchy*
+CclsDerivedHierarchy                                       *CclsBaseHierarchy*
 
 Get a tree of inheritance descendants for the symbol under cursor.
 
-LspCclsCallers                                                *LspCclsCallers*
+CclsCallers                                                      *CclsCallers*
 
 Get a list of functions calling the function under the cursor.
 
-LspCclsCallHierarchy                                    *LspCclsCallHierarchy*
+CclsCallHierarchy                                          *CclsCallHierarchy*
 
 Get a hierarchy of functions calling the function under the cursor.
 
-LspCclsCallees                                                *LspCclsCallees*
+CclsCallees                                                      *CclsCallees*
 
 Get a list of functions called by the function under the cursor.
 
-LspCclsCalleeHierahy                                  *LspCclsCalleeHierarchy*
+CclsCalleeHierahy                                        *CclsCalleeHierarchy*
 
 Get a hierarchy of functions called by the function under the cursor.
 
-LspCclsMembers                                                *LspCclsMembers*
+CclsMembers                                                      *CclsMembers*
 
 Get a lists of members for the symbol under cursor.
 
-LspCclsMemberHierarchy                                *LspCclsMemberHierarchy*
+CclsMemberHierarchy                                      *CclsMemberHierarchy*
 
 Get a tree of members for the symbol under cursor.
 
-LspCclsVars                                                      *LspCclsVars*
+CclsVars                                                            *CclsVars*
 
 Get a list of document variables.
 
 ==============================================================================
-Mappings                                               *vim-lsp-ccls-mappings*
+Mappings                                                   *vim-ccls-mappings*
 
 A set of <plug> mappings are exposed to control the Yggdrasil buffers used to
 display hierarchy trees. See |yggdrasil-mappings|.
 
 ==============================================================================
-License                                                 *vim-lsp-ccls-license*
+License                                                     *vim-ccls-license*
 
 This software is distributed under the MIT License.
 
-Full license: https://github.com/m-pilia/vim-lsp-ccls/blob/master/LICENSE
+Full license: https://github.com/m-pilia/vim-ccls/blob/master/LICENSE

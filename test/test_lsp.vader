@@ -1,19 +1,19 @@
 Before:
   let b:tmp_dir = has('win32') ? expand('%TEMP%\') : '/tmp/'
-  let b:lsp_ccls_log_file = b:tmp_dir . 'vim_lsp_ccls.log'
+  let b:ccls_log_file = b:tmp_dir . 'vim_ccls.log'
 
   source test/utils.vim
 
   let b:Log = GetFunction('autoload/ccls/lsp.vim', 'log')
 
 After:
-  if exists('b:lsp_ccls_log_file')
-    call system((has('win32') ? 'del ' : 'rm -f ') . b:lsp_ccls_log_file)
+  if exists('b:ccls_log_file')
+    call system((has('win32') ? 'del ' : 'rm -f ') . b:ccls_log_file)
   endif
 
   unlet! b:tmp_dir
-  unlet! b:lsp_ccls_log_file
-  unlet! g:lsp_ccls_log_file
+  unlet! b:ccls_log_file
+  unlet! g:ccls_log_file
   unlet! b:Log
   unlet! args
   unlet! file_content
@@ -22,19 +22,19 @@ After:
 Execute(Test s:log with log file set):
   let args = ['aaa', 'bbb', {'ccc': 'ddd'}]
 
-  let g:lsp_ccls_log_file = b:lsp_ccls_log_file
+  let g:ccls_log_file = b:ccls_log_file
   call b:Log(args[0], args[1], args[2])
 
-  Assert filereadable(b:lsp_ccls_log_file)
+  Assert filereadable(b:ccls_log_file)
 
-  let file_content = readfile(g:lsp_ccls_log_file)
+  let file_content = readfile(g:ccls_log_file)
   let result = matchlist(file_content, '\v.* \| (.*)')[1]
 
   AssertEqual json_encode(args), result
 
 Execute(Test s:log with log file not set):
-  unlet! g:lsp_ccls_log_file
+  unlet! g:ccls_log_file
 
   call b:Log('foo')
 
-  Assert !filereadable(b:lsp_ccls_log_file)
+  Assert !filereadable(b:ccls_log_file)

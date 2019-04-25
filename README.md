@@ -1,8 +1,8 @@
-vim-lsp-ccls: vim plugin for the ccls Language Server
+vim-ccls: vim plugin for the ccls Language Server
 ===============================================================
-[![Travis CI Build Status](https://travis-ci.org/m-pilia/vim-lsp-ccls.svg?branch=master)](https://travis-ci.org/m-pilia/vim-lsp-ccls)
-[![codecov](https://codecov.io/gh/m-pilia/vim-lsp-ccls/branch/master/graph/badge.svg)](https://codecov.io/gh/m-pilia/vim-lsp-ccls/branch/master)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/m-pilia/vim-lsp-ccls/blob/master/LICENSE)
+[![Travis CI Build Status](https://travis-ci.org/m-pilia/vim-ccls.svg?branch=master)](https://travis-ci.org/m-pilia/vim-ccls)
+[![codecov](https://codecov.io/gh/m-pilia/vim-ccls/branch/master/graph/badge.svg)](https://codecov.io/gh/m-pilia/vim-ccls/branch/master)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/m-pilia/vim-ccls/blob/master/LICENSE)
 
 This plugin supports some additional methods provided by
 [ccls](https://github.com/MaskRay/ccls), which are not part of the standard
@@ -55,27 +55,27 @@ The plugin provides the following commands. Hierarchy commands will open a
 tree-like buffer, while the other commands will populate the [quickfix
 list](http://vimdoc.sourceforge.net/htmldoc/quickfix.html).
 
-* **LspCclsBase**:
+* **CclsBase**:
   Get a list of base classes for the symbol under the cursor.
-* **LspCclsBaseHierarchy**:
+* **CclsBaseHierarchy**:
   Get a tree of inheritance ancestors for the symbol under cursor.
-* **LspCclsDerived**:
+* **CclsDerived**:
   Get a list of derived classes for the symbol under the cursor.
-* **LspCclsDerivedHierarchy**:
+* **CclsDerivedHierarchy**:
   Get a tree of inheritance descendants for the symbol under cursor.
-* **LspCclsCallers**:
+* **CclsCallers**:
   Get a list of functions calling the function under the cursor.
-* **LspCclsCallHierarchy**:
+* **CclsCallHierarchy**:
   Get a hierarchy of functions calling the function under the cursor.
-* **LspCclsCallees**:
+* **CclsCallees**:
   Get a list of functions called by the function under the cursor.
-* **LspCclsCalleeHierahy**:
+* **CclsCalleeHierahy**:
   Get a hierarchy of functions called by the function under the cursor.
-* **LspCclsMembers**:
+* **CclsMembers**:
   Get a lists of members for the symbol under cursor.
-* **LspCclsMemberHierarchy**:
+* **CclsMemberHierarchy**:
   Get a tree of members for the symbol under cursor.
-* **LspCclsVars**:
+* **CclsVars**:
   Get a list of document variables.
 
 Settings
@@ -83,21 +83,21 @@ Settings
 
 It is possible to automatically close a tree buffer when jumping to a location:
 ```vim
-let g:lsp_ccls_close_on_jump = v:true
+let g:ccls_close_on_jump = v:true
 ```
 
 To control how many levels of depth in the sub-tree are fetched for each
 request, when building a tree (a large value may make execution slow when
 generating large trees):
 ```vim
-let g:lsp_ccls_levels = 1
+let g:ccls_levels = 1
 ```
 
 The size and position of the tree window can be set:
 ```vim
-let g:lsp_ccls_size = 50
-let g:lsp_ccls_position = 'botright'
-let g:lsp_ccls_orientation = 'horizontal'
+let g:ccls_size = 50
+let g:ccls_position = 'botright'
+let g:ccls_orientation = 'horizontal'
 ```
 
 The following `<Plug>` mappings are available to interact with a tree buffer:
@@ -132,7 +132,7 @@ If you encounter any problem, the first step for troubleshooting is to enable
 logging, by setting the following variable:
 
 ```vim
-let g:lsp_ccls_log_file = expand('~/my_log_file.txt')
+let g:ccls_log_file = expand('~/my_log_file.txt')
 ```
 
 License
@@ -140,5 +140,5 @@ License
 
 This software is distributed under the MIT license. The full text of the license
 is available in the [LICENSE
-file](https://github.com/m-pilia/vim-lsp-ccls/blob/master/LICENSE) distributed
+file](https://github.com/m-pilia/vim-ccls/blob/master/LICENSE) distributed
 alongside the source code.

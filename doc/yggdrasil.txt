@@ -196,4 +196,4 @@ License                                                    *yggdrasil-license*
 
 This software is distributed under the MIT License.
 
-Full license: https://github.com/m-pilia/vim-lsp-ccls/blob/master/LICENSE
+Full license: https://github.com/m-pilia/vim-ccls/blob/master/LICENSE
