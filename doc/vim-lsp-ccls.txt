@@ -59,14 +59,12 @@ One of the supported Language Server client plugins listed in
 |vim-ccls-introduction| needs to be installed and properly configured with
 ccls as language server in order for it to work.
 
-To install ccls and set up a project to use it in combination with coc.nvim,
-LanguageClient-neovim, or vim-lsp, follow the instructions in the ccls wiki:
+To install ccls and set up a project to use it in combination with one of the
+supported LSP clients, follow the instructions in the ccls wiki:
 * https://github.com/MaskRay/ccls/wiki/coc.nvim
+* https://github.com/MaskRay/ccls/wiki/vim-lsc
 * https://github.com/MaskRay/ccls/wiki/vim-lsp
 * https://github.com/MaskRay/ccls/wiki/LanguageClient-neovim
-
-To set up a project with vim-lsc, please refer to |lsc-setup| and, for advanced
-configuration, to |lsc-server-message_hooks|.
 
 ==============================================================================
 Options                                                     *vim-ccls-options*
