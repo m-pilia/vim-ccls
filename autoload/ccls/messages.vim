@@ -68,18 +68,21 @@ function! s:append_children(bufno, id, data) abort
 endfunction
 
 " Lazily fetch the children of a node
-function! s:lazy_open_callback(parent_id, node) abort
+function! s:lazy_open_callback(node_data, node) abort
     let l:bufno = b:yggdrasil_tree['buffer']
     let l:filetype = b:yggdrasil_tree['filetype']
     let l:method = b:yggdrasil_tree['method']
     let l:Handler = {data -> s:append_children(l:bufno, a:node.id, data)}
 
     let l:params = {
-    \   'id': a:parent_id,
+    \   'id': a:node_data.id,
     \   'hierarchy': v:true,
     \   'levels': g:ccls_levels,
     \ }
     call extend(l:params, b:yggdrasil_tree.extra_params, 'force')
+    if has_key(a:node_data, 'kind')
+        let l:params['kind'] = a:node_data.kind
+    endif
 
     " FIXME horrible hack
     " When sending a request, vim-lsp requires the file in the current buffer to
@@ -107,13 +110,7 @@ function! s:make_children(parent_id, level, children_data) abort
         " Create a callback to fetch the subtree lazily
         let l:Lazy_open = v:null
         if l:child.numChildren > 0 && a:level >= g:ccls_levels
-            let l:params = {
-            \   'id': l:child.id,
-            \   'hierarchy': v:true,
-            \   'levels': g:ccls_levels,
-            \ }
-            call extend(l:params, b:yggdrasil_tree.extra_params, 'force')
-            let l:Lazy_open = function('s:lazy_open_callback', [l:child.id])
+            let l:Lazy_open = function('s:lazy_open_callback', [l:child])
         endif
 
         let l:node = b:yggdrasil_tree.insert(l:name, l:Callback, l:Lazy_open, a:parent_id)
