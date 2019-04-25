@@ -2,6 +2,7 @@ Before:
   let b:tmp_dir = has('win32') ? expand('%TEMP%\') : '/tmp/'
   let b:ccls_log_file = b:tmp_dir . 'vim_ccls.log'
   let b:warning_text = 'This is a warning'
+  let b:message_text = 'This is a message'
 
 After:
   if exists('b:ccls_log_file')
@@ -12,6 +13,8 @@ After:
   unlet! b:ccls_log_file
   unlet! g:ccls_log_file
   unlet! b:warning_text
+  unlet! b:message_text
+  unlet! g:ccls_quiet
   unlet! args
   unlet! file_content
   unlet! result
@@ -43,3 +46,23 @@ Execute(Test ccls#util#warning):
   let message_list = GetMessages()
 
   AssertEqual 'vim-ccls: ' . b:warning_text, message_list[-1]
+
+Execute(Test ccls#util#message with g:ccls_quiet = 0):
+
+  let g:ccls_quiet = 0
+
+  call ccls#util#message(b:message_text)
+
+  let message_list = GetMessages()
+
+  AssertEqual 'vim-ccls: ' . b:message_text, message_list[-1]
+
+Execute(Test ccls#util#message with g:ccls_quiet = 1):
+
+  let g:ccls_quiet = 1
+
+  let message_list = GetMessages()
+
+  call ccls#util#message(b:message_text)
+
+  AssertEqual message_list, GetMessages()

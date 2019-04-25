@@ -65,6 +65,8 @@ function! s:append_children(bufno, id, data) abort
     silent execute 'b' . a:bufno
     call s:make_children(a:id, 1, a:data.children)
     call b:yggdrasil_tree.render()
+    redraw
+    call ccls#util#message('Node expanded')
 endfunction
 
 " Lazily fetch the children of a node
@@ -83,6 +85,8 @@ function! s:lazy_open_callback(node_data, node) abort
     if has_key(a:node_data, 'kind')
         let l:params['kind'] = a:node_data.kind
     endif
+
+    call ccls#util#message('Expanding node...')
 
     " FIXME horrible hack
     " When sending a request, vim-lsp requires the file in the current buffer to

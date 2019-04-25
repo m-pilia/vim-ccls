@@ -12,6 +12,8 @@ CONTENTS                                                   *vim-ccls-contents*
       g:ccls_size.................|g:ccls_size|
       g:ccls_position.............|g:ccls_position|
       g:ccls_orientation..........|g:ccls_orientation|
+      g:ccls_log_file.............|g:ccls_log_file|
+      g:ccls_quiet................|g:ccls_quiet|
     Commands......................|vim-ccls-commands|
       CclsVars....................|CclsVars|
       CclsMembers.................|CclsMembers|
@@ -129,7 +131,7 @@ g:ccls_position                                              *g:ccls_position*
 <
 
 g:ccls_orientation                                        *g:ccls_orientation*
-    Type: |string|
+    Type: |String|
     Default: `vertical`
 
     Specify the orientation of the Yggrdrasil tree window ('horizontal' or
@@ -142,7 +144,7 @@ g:ccls_orientation                                        *g:ccls_orientation*
 <
 
 g:ccls_log_file                                              *g:ccls_log_file*
-    Type: |string|
+    Type: |String|
     Default: not set
 
     If set, enables logging and specifies the location of the log file.
@@ -150,6 +152,17 @@ g:ccls_log_file                                              *g:ccls_log_file*
     Example:
 >
     let g:ccls_log_file = expand('~/my_log_file.txt')
+<
+
+g:ccls_quiet                                                    *g:ccls_quiet*
+    Type: |Number|
+    Default: 0
+
+    If nonzero, do not echo messages unless they are warnings.
+
+    Example:
+>
+    let g:ccls_quiet = 1
 <
 
 ==============================================================================

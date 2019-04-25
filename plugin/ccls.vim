@@ -23,6 +23,10 @@ if !exists('g:ccls_orientation')
     let g:ccls_orientation = 'vertical'
 endif
 
+if !exists('g:ccls_quiet')
+    let g:ccls_quiet = 0
+endif
+
 command! CclsVars             call ccls#messages#vars()
 
 command! CclsMembers          call ccls#messages#members()
