@@ -39,12 +39,19 @@ This plugin can be installed with any vim plugin manager. One of the supported
 Language Server clients listed above needs to be installed and properly
 configured with ccls as language server in order for it to work.
 
-To install ccls and set up a project to use it in combination with one of the
-supported LSP clients, follow the instructions in the ccls wiki:
+If you have not done it already,
+[build](https://github.com/MaskRay/ccls/wiki/Build) and
+[install](https://github.com/MaskRay/ccls/wiki/Install) ccls, and configure
+your LSP client to use it (example instructions in the ccls wiki):
 * [coc.nvim](https://github.com/MaskRay/ccls/wiki/coc.nvim)
 * [LanguageClient-neovim](https://github.com/MaskRay/ccls/wiki/LanguageClient-neovim)
 * [vim-lsc](https://github.com/MaskRay/ccls/wiki/vim-lsc)
 * [vim-lsp](https://github.com/MaskRay/ccls/wiki/vim-lsp)
+
+In order for ccls to work, make sure to correctly [set up your
+project](https://github.com/MaskRay/ccls/wiki/Project-Setup), by either
+providing a compilation database (`compile_commands.json`) or a `.ccls`
+configuration file.
 
 Commands
 ========
