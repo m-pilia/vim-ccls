@@ -29,8 +29,8 @@ After:
   unlet! extra_params
   unlet! data
 
-  if exists('*lsc#server#call')
-    delfunction lsc#server#call
+  if exists('*lsc#server#userCall')
+    delfunction lsc#server#userCall
   endif
   if exists('*lsp#send_request')
     delfunction lsp#send_request
