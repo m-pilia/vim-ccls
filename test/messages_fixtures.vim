@@ -19,7 +19,7 @@ function! Test_jump_to(jump_to) abort
     AssertEqual l:col, l:position[2]
 endfunction
 
-function! Test_locations(function) abort
+function! Test_locations(function, sleep_time) abort
     let l:lines = [
     \   '    int x;',
     \   '    float y;',
@@ -32,6 +32,10 @@ function! Test_locations(function) abort
     call cursor(l:row, l:col)
 
     call a:function()
+
+    if a:sleep_time > 0
+        silent exec 'sleep ' . a:sleep_time . 'm'
+    endif
 
     let l:qfl = getqflist()
 
@@ -49,10 +53,14 @@ function! s:assert_inner_nodes(expected_label)
     AssertEqual a:expected_label . '_4', b:yggdrasil_tree.root.children[1].children[1].label
 endfunction
 
-function! Test_hierarchy(function, expected_method, expected_label) abort
+function! Test_hierarchy(function, expected_method, expected_label, sleep_time) abort
     edit test/example.cpp
 
     call a:function()
+
+    if a:sleep_time > 0
+        silent exec 'sleep ' . a:sleep_time . 'm'
+    endif
 
     AssertEqual &filetype, 'yggdrasil'
     AssertEqual a:expected_method, b:yggdrasil_tree.method
@@ -75,7 +83,7 @@ function! Test_hierarchy(function, expected_method, expected_label) abort
     endif
 endfunction
 
-function! Test_lazy_open(expected_label) abort
+function! Test_lazy_open(expected_label, sleep_time) abort
     let l:collapsed = 0
     let l:recursive = 0
 
@@ -89,6 +97,10 @@ function! Test_lazy_open(expected_label) abort
 
     " Expand lazily the inner node with two children (node_2)
     call b:yggdrasil_tree.set_collapsed_under_cursor(l:collapsed, l:recursive)
+
+    if a:sleep_time > 0
+        silent exec 'sleep ' . a:sleep_time . 'm'
+    endif
 
     AssertNotEqual type({->0}), type(b:yggdrasil_tree.root.children[1].lazy_open),
 

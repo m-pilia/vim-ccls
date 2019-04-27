@@ -39,6 +39,7 @@ such as calls and hierarchies.
 This plugin does not implement a Language Server client, instead it relies on an
 existing LSP client, adding on top of it the ccls-specific features. Currently
 supported LSP clients are:
+* ALE                   (https://github.com/w0rp/ale)
 * coc.nvim              (https://github.com/neoclide/coc.nvim)
 * LanguageClient-neovim (https://github.com/autozimu/LanguageClient-neovim)
 * vim-lsc               (https://github.com/natebosch/vim-lsc)
@@ -61,6 +62,7 @@ ccls as language server in order for it to work.
 
 To install ccls and set up a project to use it in combination with one of the
 supported LSP clients, follow the instructions in the ccls wiki:
+* https://github.com/MaskRay/ccls/wiki/ALE
 * https://github.com/MaskRay/ccls/wiki/coc.nvim
 * https://github.com/MaskRay/ccls/wiki/vim-lsc
 * https://github.com/MaskRay/ccls/wiki/vim-lsp

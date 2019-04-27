@@ -1,3 +1,28 @@
+let s:ale_conn_id = v:null
+let s:ale_handlers = {}
+
+" Handle a response from ALE
+function! s:ale_handler(conn_id, response) abort
+    if type(a:response) != v:t_dict ||
+    \  !has_key(a:response, 'id') ||
+    \  !has_key(a:response, 'result')
+        call ccls#util#warning('LSP error')
+        return
+    endif
+
+    call ccls#util#log('Incoming', 'ALE', a:response.result)
+
+    if !has_key(s:ale_handlers, a:response.id)
+        return
+    endif
+
+    try
+        call s:ale_handlers[a:response.id](a:response.result)
+    finally
+        call remove(s:ale_handlers, a:response.id)
+    endtry
+endfunction
+
 " Handle a response from vim-lsc
 function! s:vim_lsc_handler(handler, data) abort
     call ccls#util#log('Incoming', 'vim-lsc', a:data)
@@ -85,6 +110,28 @@ function! ccls#lsp#request(method, params, handler) abort
                 \ }
 
                 call lsp#send_request('ccls', l:request)
+            else
+                call ccls#util#warning('ccls language server unvailable')
+            endif
+        elseif exists('*ale#lsp#GetConnections')
+            " Use ALE
+            if s:ale_conn_id == v:null
+                let l:project_root = ale#handlers#ccls#GetProjectRoot(bufnr(0))
+                for l:conn_id in keys(ale#lsp#GetConnections())
+                    if match(l:conn_id, 'ccls:.*' . l:project_root) >= 0
+                        let s:ale_conn_id = l:conn_id
+                        call ale#lsp#RegisterCallback(l:conn_id, function('s:ale_handler'))
+                        break
+                    endif
+                endfor
+            endif
+            if s:ale_conn_id != v:null
+                let l:ale_req_id = ale#lsp#Send(s:ale_conn_id, [0, a:method, a:params])
+                if l:ale_req_id > 0
+                    let s:ale_handlers[l:ale_req_id] = a:handler
+                else
+                    call ccls#util#warning('LSP error')
+                endif
             else
                 call ccls#util#warning('ccls language server unvailable')
             endif

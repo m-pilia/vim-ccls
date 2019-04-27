@@ -1,5 +1,7 @@
 " Mock vim-lsp
 
+source test/mock/lsp/client.vim
+
 function! lsp#get_server_names() abort
     return ['ccls']
 endfunction

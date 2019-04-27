@@ -10,6 +10,7 @@ Language Server Protocol (LSP). It does not implement a LSP client, but it
 relies on an existing LSP plugin, adding on top of it the ccls-specific
 features. Currently supported LSP clients are:
 
+* [ALE](https://github.com/w0rp/ale)
 * [coc.nvim](https://github.com/neoclide/coc.nvim)
 * [LanguageClient-neovim](https://github.com/autozimu/LanguageClient-neovim)
 * [vim-lsc](https://github.com/natebosch/vim-lsc)
@@ -43,6 +44,7 @@ If you have not done it already,
 [build](https://github.com/MaskRay/ccls/wiki/Build) and
 [install](https://github.com/MaskRay/ccls/wiki/Install) ccls, and configure
 your LSP client to use it (example instructions in the ccls wiki):
+* [ALE](https://github.com/MaskRay/ccls/wiki/ALE)
 * [coc.nvim](https://github.com/MaskRay/ccls/wiki/coc.nvim)
 * [LanguageClient-neovim](https://github.com/MaskRay/ccls/wiki/LanguageClient-neovim)
 * [vim-lsc](https://github.com/MaskRay/ccls/wiki/vim-lsc)
