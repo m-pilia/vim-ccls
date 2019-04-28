@@ -122,6 +122,7 @@ function! s:make_tree(method, extra_params, data) abort
     endif
 
     let l:filetype = &filetype
+    let l:calling_buffer = bufnr('%')
 
     call yggdrasil#tree#new(g:ccls_size,
     \                       g:ccls_position,
@@ -130,6 +131,7 @@ function! s:make_tree(method, extra_params, data) abort
     " Store additional information in the tree structure
     " to avoid having too many arguments in the callbacks
     let b:yggdrasil_tree['buffer'] = bufnr('%')
+    let b:yggdrasil_tree['calling_buffer'] = l:calling_buffer
     let b:yggdrasil_tree['filetype'] = l:filetype
     let b:yggdrasil_tree['extra_params'] = a:extra_params
     let b:yggdrasil_tree['method'] = a:method

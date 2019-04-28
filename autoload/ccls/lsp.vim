@@ -1,4 +1,7 @@
-let s:ale_conn_id = v:null
+" Each key represents a connection id for a project
+let s:ale_connected = {}
+
+" Map request ids to handlers
 let s:ale_handlers = {}
 
 " Handle a response from ALE
@@ -115,18 +118,17 @@ function! ccls#lsp#request(method, params, handler) abort
             endif
         elseif exists('*ale#lsp#GetConnections')
             " Use ALE
-            if s:ale_conn_id == v:null
-                let l:project_root = ale#handlers#ccls#GetProjectRoot(bufnr(0))
-                for l:conn_id in keys(ale#lsp#GetConnections())
-                    if match(l:conn_id, 'ccls:.*' . l:project_root) >= 0
-                        let s:ale_conn_id = l:conn_id
-                        call ale#lsp#RegisterCallback(l:conn_id, function('s:ale_handler'))
-                        break
-                    endif
-                endfor
+            let l:bufnr = exists('b:yggdrasil_tree') ? b:yggdrasil_tree.calling_buffer : bufnr('%')
+            let l:conn_id = 'ccls:' . ale#handlers#ccls#GetProjectRoot(l:bufnr)
+
+            if !has_key(s:ale_connected, l:conn_id) &&
+            \   has_key(ale#lsp#GetConnections(), l:conn_id)
+                let s:ale_connected[l:conn_id] = v:true
+                call ale#lsp#RegisterCallback(l:conn_id, function('s:ale_handler'))
             endif
-            if s:ale_conn_id != v:null
-                let l:ale_req_id = ale#lsp#Send(s:ale_conn_id, [0, a:method, a:params])
+
+            if has_key(s:ale_connected, l:conn_id)
+                let l:ale_req_id = ale#lsp#Send(l:conn_id, [0, a:method, a:params])
                 if l:ale_req_id > 0
                     let s:ale_handlers[l:ale_req_id] = a:handler
                 else
