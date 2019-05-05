@@ -18,4 +18,5 @@ if has('profile') && !empty(s:profile_file)
     profile! file ftplugin/**.vim
     profile! file plugin/**.vim
     profile! file syntax/**.vim
+    profile! file after/**.vim
 endif

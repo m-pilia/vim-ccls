@@ -7,4 +7,3 @@ syntax match YggdrasilLabel           "\v^(\s|[▸▾])*.*( \[\d+\])@=" contains
 
 highlight def link YggdrasilMarkExpanded    Type
 highlight def link YggdrasilMarkCollapsed   Macro
-highlight def link YggdrasilLabel           Identifier
