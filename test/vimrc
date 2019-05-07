@@ -14,9 +14,9 @@ set nocompatible
 let s:profile_file = $VIM_PROFILE_FILE
 if has('profile') && !empty(s:profile_file)
     execute 'profile start ' . s:profile_file
+    profile! file after/**.vim
     profile! file autoload/**.vim
     profile! file ftplugin/**.vim
     profile! file plugin/**.vim
     profile! file syntax/**.vim
-    profile! file after/**.vim
 endif
