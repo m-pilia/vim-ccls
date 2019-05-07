@@ -138,6 +138,7 @@ function! s:make_tree(method, extra_params, data) abort
 
     call s:make_children(v:null, 0, [a:data])
     let b:yggdrasil_tree.root.label = a:data.name
+    let b:yggdrasil_tree.root.collapsed = v:false
     call b:yggdrasil_tree.render()
 endfunction
 
