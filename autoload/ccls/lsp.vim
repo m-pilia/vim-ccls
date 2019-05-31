@@ -1,29 +1,13 @@
-" Each key represents a connection id for a project
-let s:ale_connected = {}
-
-" Map request ids to handlers
-let s:ale_handlers = {}
-
 " Handle a response from ALE
-function! s:ale_handler(conn_id, response) abort
-    if type(a:response) != v:t_dict ||
-    \  !has_key(a:response, 'id') ||
-    \  !has_key(a:response, 'result')
+function! s:ale_handler(handler, data) abort
+    call ccls#util#log('Incoming', 'ALE', a:data)
+    if type(a:data) != v:t_dict ||
+    \  has_key(a:data, 'error') ||
+    \  !has_key(a:data, 'result')
         call ccls#util#warning('LSP error')
         return
     endif
-
-    call ccls#util#log('Incoming', 'ALE', a:response.result)
-
-    if !has_key(s:ale_handlers, a:response.id)
-        return
-    endif
-
-    try
-        call s:ale_handlers[a:response.id](a:response.result)
-    finally
-        call remove(s:ale_handlers, a:response.id)
-    endtry
+    call a:handler(a:data.result)
 endfunction
 
 " Handle a response from vim-lsc
@@ -116,27 +100,17 @@ function! ccls#lsp#request(method, params, handler) abort
             else
                 call ccls#util#warning('ccls language server unvailable')
             endif
-        elseif exists('*ale#lsp#GetConnections')
+        elseif exists('*ale#lsp_linter#SendRequest')
             " Use ALE
             let l:bufnr = exists('b:yggdrasil_tree') ? b:yggdrasil_tree.calling_buffer : bufnr('%')
-            let l:conn_id = 'ccls:' . ale#handlers#ccls#GetProjectRoot(l:bufnr)
+            let l:message = [0, a:method, a:params]
+            let l:Callback = function('s:ale_handler', [a:handler])
 
-            if !has_key(s:ale_connected, l:conn_id) &&
-            \   has_key(ale#lsp#GetConnections(), l:conn_id)
-                let s:ale_connected[l:conn_id] = v:true
-                call ale#lsp#RegisterCallback(l:conn_id, function('s:ale_handler'))
-            endif
-
-            if has_key(s:ale_connected, l:conn_id)
-                let l:ale_req_id = ale#lsp#Send(l:conn_id, [0, a:method, a:params])
-                if l:ale_req_id > 0
-                    let s:ale_handlers[l:ale_req_id] = a:handler
-                else
-                    call ccls#util#warning('LSP error')
-                endif
-            else
-                call ccls#util#warning('ccls language server unvailable')
-            endif
+            try
+                call ale#lsp_linter#SendRequest(l:bufnr, 'ccls', l:message, l:Callback)
+            catch
+                call ccls#util#warning('LSP error')
+            endtry
         else
             call ccls#util#warning('No LSP plugin found!')
         end
