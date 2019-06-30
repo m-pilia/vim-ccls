@@ -1,7 +1,7 @@
 scriptencoding utf-8
 
 function! yggdrasil#tree#get_node_id_under_cursor() dict abort
-    let l:id = str2nr(matchstr(getline('.'), '\v\[@<=\d+\]@='))
+    let l:id = str2nr(matchstr(getline('.'), '\v\[@<=\d+(\]$)@='))
     return l:self.root.find(l:id)
 endfunction
 
