@@ -128,6 +128,8 @@ function! s:make_tree(method, extra_params, data) abort
     \                       g:ccls_position,
     \                       g:ccls_orientation)
 
+    call ccls#syntax#additional()
+
     " Store additional information in the tree structure
     " to avoid having too many arguments in the callbacks
     let b:yggdrasil_tree['buffer'] = bufnr('%')
