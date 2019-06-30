@@ -120,6 +120,7 @@ function! ccls#lsp#request(method, params, handler) abort
             silent set filetype=yggdrasil
             silent 0file
             silent execute 'set buftype=' . l:buftype
+            call ccls#syntax#additional()
             if filereadable(l:temp_file_name)
                 call delete(l:temp_file_name)
             endif
