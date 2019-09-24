@@ -180,7 +180,7 @@ CclsDerived                                                      *CclsDerived*
 
 Get a list of derived classes for the symbol under the cursor.
 
-CclsDerivedHierarchy                                       *CclsBaseHierarchy*
+CclsDerivedHierarchy                                    *CclsDerivedHierarchy*
 
 Get a tree of inheritance descendants for the symbol under cursor.
 
@@ -196,7 +196,7 @@ CclsCallees                                                      *CclsCallees*
 
 Get a list of functions called by the function under the cursor.
 
-CclsCalleeHierahy                                        *CclsCalleeHierarchy*
+CclsCalleeHierarchy                                      *CclsCalleeHierarchy*
 
 Get a hierarchy of functions called by the function under the cursor.
 
