@@ -1,34 +1,47 @@
 Before:
   let b:script = 'autoload/ccls/messages.vim'
-  unlet! g:ccls_levels
+  unlet! g:vim_ccls_plugin_loaded
   unlet! g:ccls_close_on_jump
   source test/utils.vim
   source test/mock/ccls.vim
   source test/messages_fixtures.vim
+  source test/mock/function.vim
 
 After:
   bufdo bd
   normal <c-w><c-o>
 
   unlet! b:script
-  unlet! Path2uri
-  unlet! Uri2path
-  unlet! Text_document_identifier
-  unlet! Position
+
+  unlet! Handle_tree
   unlet! Jump_to
-  unlet! Make_tree
-  unlet! path
+  unlet! Path2uri
+  unlet! Position
+  unlet! Request
+  unlet! Text_document_identifier
+  unlet! Uri2path
+
+  unlet! arglist
+  unlet! col
+  unlet! data
   unlet! expected
-  unlet! uri
+  unlet! extra_params
+  unlet! function_mock
+  unlet! handler_mock
+  unlet! method
+  unlet! node
+  unlet! path
+  unlet! position
+  unlet! provider
+  unlet! request_mock
   unlet! result
   unlet! row
-  unlet! col
-  unlet! node
-  unlet! position
-  unlet! method
-  unlet! extra_params
-  unlet! data
+  unlet! test_input
+  unlet! uri
 
+  if exists('*ccls#lsp#get_mock')
+    delfunction ccls#lsp#get_mock
+  endif
   if exists('*lsc#server#userCall')
     delfunction lsc#server#userCall
   endif
@@ -50,6 +63,35 @@ After:
   if exists('*ale#lsp#GetConnections')
     delfunction ale#lsp#GetConnections
   endif
+
+
+Execute(Test plugin):
+  " Test loading
+  source plugin/ccls.vim
+
+  AssertEqual 1, g:vim_ccls_plugin_loaded
+
+  " Test double loading
+  source plugin/ccls.vim
+
+  AssertEqual 1, g:vim_ccls_plugin_loaded
+  AssertEqual 0, g:ccls_close_on_jump
+  AssertEqual 1, g:ccls_levels
+  AssertEqual 50, g:ccls_size
+  AssertEqual 'topleft', g:ccls_position
+  AssertEqual 'vertical', g:ccls_orientation
+  AssertEqual 0, g:ccls_quiet
+  Assert exists(':CclsVars')
+  Assert exists(':CclsMembers')
+  Assert exists(':CclsMemberHierarchy')
+  Assert exists(':CclsBase')
+  Assert exists(':CclsBaseHierarchy')
+  Assert exists(':CclsDerived')
+  Assert exists(':CclsDerivedHierarchy')
+  Assert exists(':CclsCallers')
+  Assert exists(':CclsCallees')
+  Assert exists(':CclsCallHierarchy')
+  Assert exists(':CclsCalleeHierarchy')
 
 
 Execute(Test s:path2uri):
@@ -131,6 +173,204 @@ Execute(Test s:jump_to with g:ccls_close_on_jump = 1):
   call Test_jump_to(Jump_to)
 
   AssertEqual 1, len(getbufinfo({'bufloaded': 1}))
+
+
+Execute(Test s:request):
+  source test/mock/ccls/lsp.vim
+  let Request = GetFunction(b:script, 'request')
+  let arglist = ['filetype', 'bufnr', 'method', 'params', 'handler']
+  set filetype=yggdrasil
+
+  call call(Request, arglist)
+
+  let function_mock = ccls#lsp#get_mock()
+
+  AssertEqual 'yggdrasil', &filetype
+  AssertEqual 1, function_mock.count
+  AssertEqual ['bufnr', 'method', 'params', 'handler'], function_mock.args[0]
+
+  source autoload/ccls/lsp.vim
+
+
+Execute(Test s:add_children_to_cache):
+  let provider = {
+  \   'add_children_to_cache': GetFunction(b:script, 'add_children_to_cache'),
+  \   'cached_children': {},
+  \ }
+
+  let test_input = {
+  \   'id': 'mock_id_1',
+  \   'children': [
+  \     {
+  \       'id': 'mock_id_2',
+  \     },
+  \     {
+  \       'id': 'mock_id_3',
+  \       'children': [],
+  \     },
+  \     {
+  \       'id': 'mock_id_4',
+  \       'children': [
+  \         {
+  \           'id': 'mock_id_5',
+  \         },
+  \       ],
+  \     },
+  \   ],
+  \ }
+
+  call provider.add_children_to_cache(test_input)
+  Assert has_key(provider.cached_children, 'mock_id_1')
+  Assert has_key(provider.cached_children, 'mock_id_4')
+  Assert !has_key(provider.cached_children, 'mock_id_2')
+  Assert !has_key(provider.cached_children, 'mock_id_3')
+  Assert !has_key(provider.cached_children, 'mock_id_5')
+
+  AssertEqual test_input.children, provider.cached_children['mock_id_1']
+  AssertEqual test_input.children[2].children, provider.cached_children['mock_id_4']
+
+
+Execute(Test s:handle_children_data):
+  let handler_mock = NewFunctionMock()
+  let function_mock = NewFunctionMock()
+
+  let provider = {
+  \   'handle_children_data': GetFunction(b:script, 'handle_children_data'),
+  \   'add_children_to_cache': function_mock.function,
+  \ }
+
+  let test_input = {'children': 'mock_children'}
+
+  call provider.handle_children_data(handler_mock.function, test_input)
+
+  AssertEqual 1, function_mock.count
+  AssertEqual test_input, function_mock.args[0][0]
+
+  AssertEqual 1, handler_mock.count
+  AssertEqual 'success', handler_mock.args[0][0]
+  AssertEqual test_input.children, handler_mock.args[0][1]
+
+
+Execute(Test s:get_children):
+  source test/mock/ccls/lsp.vim
+
+  let handler_mock = NewFunctionMock()
+  let request_mock = ccls#lsp#get_mock()
+
+  let provider = {
+  \   'getChildren': GetFunction(b:script, 'get_children'),
+  \   'add_children_to_cache': GetFunction(b:script, 'add_children_to_cache'),
+  \   'handle_children_data': GetFunction(b:script, 'handle_children_data'),
+  \   'root': 'mock_root',
+  \   'filetype': 'mock_filetype',
+  \   'bufnr': 'mock_bufnr',
+  \   'method': 'mock_method',
+  \   'extra_params': {'mock_key': 'mock_value'},
+  \   'cached_children': {},
+  \ }
+
+  " Test getting the root
+  call provider.getChildren(handler_mock.function)
+
+  AssertEqual 0, request_mock.count
+  AssertEqual 1, handler_mock.count
+  AssertEqual 'success', handler_mock.args[0][0]
+  AssertEqual [provider.root], handler_mock.args[0][1]
+
+  " Test getting children already retrieved
+  call provider.getChildren(handler_mock.function, {'children': 'mock_children'})
+
+  AssertEqual 0, request_mock.count
+  AssertEqual 2, handler_mock.count
+  AssertEqual 'success', handler_mock.args[1][0]
+  AssertEqual 'mock_children', handler_mock.args[1][1]
+
+  " Test getting children from an LSP request
+  call provider.getChildren(handler_mock.function, {'id': 'mock_id', 'kind': 'mock_kind'})
+
+  AssertEqual 1, request_mock.count
+  AssertEqual 2, handler_mock.count
+  AssertEqual provider.bufnr, request_mock.args[0][0]
+  AssertEqual provider.method, request_mock.args[0][1]
+  AssertEqual 'mock_id', request_mock.args[0][2].id
+  AssertEqual 1, request_mock.args[0][2].hierarchy
+  AssertEqual g:ccls_levels, request_mock.args[0][2].levels
+  AssertEqual 'mock_kind', request_mock.args[0][2].kind
+  AssertEqual provider.extra_params.mock_key, request_mock.args[0][2].mock_key
+  AssertEqual type({->0}), type(request_mock.args[0][3])
+
+  call request_mock.args[0][3]({'id': 'mock_id', 'children': [{'id': 'mock_child'}]})
+
+  AssertEqual 3, handler_mock.count
+  AssertEqual 'success', handler_mock.args[2][0]
+  AssertEqual [{'id': 'mock_child'}], handler_mock.args[2][1]
+  Assert has_key(provider.cached_children, 'mock_id')
+  AssertEqual [{'id': 'mock_child'}], provider.cached_children['mock_id']
+
+  " Test getting cached children
+  call provider.getChildren(handler_mock.function, {'id': 'mock_id', 'kind': 'mock_kind'})
+
+  AssertEqual 1, request_mock.count
+  AssertEqual 4, handler_mock.count
+  AssertEqual 'success', handler_mock.args[3][0]
+  AssertEqual [{'id': 'mock_child'}], handler_mock.args[3][1]
+
+  source autoload/ccls/lsp.vim
+
+Execute(Test s:get_collapsible_state):
+  let provider = {
+  \   'get_collapsible_state': GetFunction(b:script, 'get_collapsible_state'),
+  \   'root_state': 'mock_root_state',
+  \   'root': {'id': 'root_id'},
+  \ }
+
+  AssertEqual 'none', provider.get_collapsible_state({'numChildren': 0})
+  AssertEqual 'collapsed', provider.get_collapsible_state({'numChildren': 1, 'id': 'non_root_id'})
+  AssertEqual 'mock_root_state', provider.get_collapsible_state({'numChildren': 1, 'id': 'root_id'})
+  AssertEqual 'collapsed', provider.get_collapsible_state({'numChildren': 1, 'id': 'root_id'})
+
+
+Execute(Test s:get_label):
+  let Get_label = GetFunction(b:script, 'get_label')
+
+  AssertEqual 'mock_field_name', Get_label({'fieldName': 'mock_field_name', 'name': 'mock_name'})
+  AssertEqual 'mock_name', Get_label({'fieldName': '', 'name': 'mock_name'})
+  AssertEqual 'mock_name', Get_label({'name': 'mock_name'})
+
+
+Execute(Test s:get_tree_item):
+  let provider = {
+  \   'getTreeItem': GetFunction(b:script, 'get_tree_item'),
+  \   'get_collapsible_state': GetFunction(b:script, 'get_collapsible_state'),
+  \   'root_state': 'mock_root_state',
+  \   'root': {'id': 'root_id'},
+  \ }
+
+  let test_input = {
+  \   'id': 10,
+  \   'name': 'mock_name',
+  \   'numChildren': 1,
+  \   'location': {
+  \     'uri': 'file://mock_uri',
+  \     'range': {
+  \       'start': {
+  \         'line': 20,
+  \         'character': 30,
+  \       },
+  \     },
+  \   },
+  \ }
+
+  let handler_mock = NewFunctionMock()
+
+  call provider.getTreeItem(handler_mock.function, test_input)
+
+  AssertEqual 1, handler_mock.count
+  AssertEqual 'success', handler_mock.args[0][0]
+  AssertEqual 10, handler_mock.args[0][1].id
+  AssertEqual type({->0}), type(handler_mock.args[0][1].command)
+  AssertEqual 'collapsed', handler_mock.args[0][1].collapsibleState
+  AssertEqual 'mock_name', handler_mock.args[0][1].label
 
 
 " ccls#messages#vars
@@ -278,352 +518,123 @@ Execute(Test ccls#messages#calls with ALE backend):
 " Call hierarchy
 
 
-Execute(Test ccls#messages#call_hierarchy with vim-lsc backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#call_hierarchy with vim-lsc backend):
   source test/mock/lsc/server.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
-
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
 
 
-Execute(Test ccls#messages#call_hierarchy with vim-lsc backend and g:ccls_levels = 2):
-  source test/mock/lsc/server.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
-
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
-
-
-Execute(Test ccls#messages#call_hierarchy with vim-lsp backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#call_hierarchy with vim-lsp backend):
   source test/mock/lsp.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
-
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
 
 
-Execute(Test ccls#messages#call_hierarchy with vim-lsp backend and g:ccls_levels = 2):
-  source test/mock/lsp.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
-
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
-
-
-Execute(Test ccls#messages#call_hierarchy with LanguageClient-neovim backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#call_hierarchy with LanguageClient-neovim backend):
   source test/mock/LanguageClient.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
-
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
 
 
-Execute(Test ccls#messages#call_hierarchy with LanguageClient-neovim backend and g:ccls_levels = 2):
-  source test/mock/LanguageClient.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
-
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
-
-
-Execute(Test ccls#messages#call_hierarchy with coc.nvim backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#call_hierarchy with coc.nvim backend):
   source test/mock/coc.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
-
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
 
 
-Execute(Test ccls#messages#call_hierarchy with coc.nvim backend and g:ccls_levels = 2):
-  source test/mock/coc.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
-
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
-
-
-Execute(Test ccls#messages#call_hierarchy with ALE backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#call_hierarchy with ALE backend):
   source test/mock/ale/lsp_linter.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
-
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
 
-
-Execute(Test ccls#messages#call_hierarchy with ALE backend and g:ccls_levels = 2):
-  source test/mock/ale/lsp_linter.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
-
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
-  call Test_lazy_open('node')
 
 
 " Member hierarchy
 
 
-Execute(Test ccls#messages#member_hierarchy with vim-lsc backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#member_hierarchy with vim-lsc backend):
   source test/mock/lsc/server.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
-  call Test_lazy_open('field')
 
 
-Execute(Test ccls#messages#member_hierarchy with vim-lsc backend and g:ccls_levels = 2):
-  source test/mock/lsc/server.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
-  call Test_lazy_open('field')
-
-
-Execute(Test ccls#messages#member_hierarchy with vim-lsp backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#member_hierarchy with vim-lsp backend):
   source test/mock/lsp.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
-  call Test_lazy_open('field')
 
 
-Execute(Test ccls#messages#member_hierarchy with vim-lsp backend and g:ccls_levels = 2):
-  source test/mock/lsp.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
-  call Test_lazy_open('field')
-
-
-Execute(Test ccls#messages#member_hierarchy with LanguageClient-neovim backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#member_hierarchy with LanguageClient-neovim backend):
   source test/mock/LanguageClient.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
-  call Test_lazy_open('field')
 
 
-Execute(Test ccls#messages#member_hierarchy with LanguageClient-neovim backend and g:ccls_levels = 2):
-  source test/mock/LanguageClient.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
-  call Test_lazy_open('field')
-
-
-Execute(Test ccls#messages#member_hierarchy with coc.nvim backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#member_hierarchy with coc.nvim backend):
   source test/mock/coc.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
-  call Test_lazy_open('field')
 
 
-Execute(Test ccls#messages#member_hierarchy with coc.nvim backend and g:ccls_levels = 2):
-  source test/mock/coc.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
-  call Test_lazy_open('field')
-
-
-Execute(Test ccls#messages#member_hierarchy with ALE backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#member_hierarchy with ALE backend):
   source test/mock/ale/lsp_linter.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
-  call Test_lazy_open('field')
-
-
-Execute(Test ccls#messages#member_hierarchy with ALE backend and g:ccls_levels = 2):
-  source test/mock/ale/lsp_linter.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
-  call Test_lazy_open('field')
 
 
 " Inheritance hierarchy
 
 
-Execute(Test ccls#messages#inheritance_hierarchy with vim-lsc backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#inheritance_hierarchy with vim-lsc backend):
   source test/mock/lsc/server.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
 
 
-Execute(Test ccls#messages#inheritance_hierarchy with vim-lsc backend and g:ccls_levels = 2):
-  source test/mock/lsc/server.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
-
-Execute(Test ccls#messages#inheritance_hierarchy with vim-lsp backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#inheritance_hierarchy with vim-lsp backend):
   source test/mock/lsp.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
 
 
-Execute(Test ccls#messages#inheritance_hierarchy with vim-lsp backend and g:ccls_levels = 2):
-  source test/mock/lsp.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
-
-Execute(Test ccls#messages#inheritance_hierarchy with LanguageClient-neovim backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#inheritance_hierarchy with LanguageClient-neovim backend):
   source test/mock/LanguageClient.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
 
 
-Execute(Test ccls#messages#inheritance_hierarchy with LanguageClient-neovim backend and g:ccls_levels = 2):
-  source test/mock/LanguageClient.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
-
-Execute(Test ccls#messages#inheritance_hierarchy with coc.nvim backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#inheritance_hierarchy with coc.nvim backend):
   source test/mock/coc.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
 
 
-Execute(Test ccls#messages#inheritance_hierarchy with coc.nvim backend and g:ccls_levels = 2):
-  source test/mock/coc.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
-
-Execute(Test ccls#messages#inheritance_hierarchy with ALE backend and g:ccls_levels = 1):
+Execute(Test ccls#messages#inheritance_hierarchy with ALE backend):
   source test/mock/ale/lsp_linter.vim
 
-  let g:ccls_levels = 1
-
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
-
-Execute(Test ccls#messages#inheritance_hierarchy with ALE backend and g:ccls_levels = 2):
-  source test/mock/ale/lsp_linter.vim
-
-  let g:ccls_levels = 2
-
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
-
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
-  call Test_lazy_open('node')
 
 
 " Invalid hierarchy
 
 Execute(Test s:make_tree with no valid symbol under cursor):
-  let Make_tree = GetFunction(b:script, 'make_tree')
+  let Handle_tree = GetFunction(b:script, 'handle_tree')
 
   let method = 0 " Irrelevant
   let extra_params = {} " Irrelevant
   let data = ''
 
-  call Make_tree(method, extra_params, data)
+  call Handle_tree(method, extra_params, data)
 
   AssertNotEqual 'yggdrasil', &filetype
   AssertEqual 'vim-ccls: No hierarchy for the object under cursor', GetMessages()[-1]

@@ -1,0 +1,2 @@
+ignore:
+  - "autoload/ccls/yggdrasil"

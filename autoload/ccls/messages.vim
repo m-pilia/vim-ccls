@@ -49,7 +49,7 @@ function! s:position() abort
 endfunction
 
 " Jump to a specified position in a given file
-function! s:jump_to(file, line, column, node) abort
+function! s:jump_to(file, line, column) abort
     let l:yggdrasil_bufno = bufnr('%')
     silent execute "normal! \<c-w>\<c-p>"
     if g:ccls_close_on_jump
@@ -60,88 +60,169 @@ function! s:jump_to(file, line, column, node) abort
     silent execute l:command . ' | call cursor(' . a:line . ',' . a:column . ')'
 endfunction
 
-" Callback to append the retrieved children to a node and update the tree
-function! s:append_children(bufno, id, data) abort
-    silent execute 'b' . a:bufno
-    call s:make_children(a:id, 1, a:data.children)
-    call b:yggdrasil_tree.render()
-    redraw
-    call ccls#util#message('Node expanded')
+" Send an LSP request. Mock a source file if necessary, since
+" some LSP clients accept calls only from within a source file.
+function! s:request(filetype, bufnr, method, params, handler) abort
+    let l:buftype = &buftype
+    let l:temp_file_name = v:null
+    let l:is_yggdrasil = &filetype ==# 'yggdrasil'
+
+    try
+        " If inside an yggdrasil buffer, mock a source file.
+        if l:is_yggdrasil
+            let l:temp_file_name = tempname()
+            silent set buftype=
+            silent execute 'set filetype=' . a:filetype
+            silent execute 'file ' . l:temp_file_name
+        endif
+
+        " Send the request
+        call ccls#lsp#request(a:bufnr, a:method, a:params, a:handler)
+    finally
+        " Restore yggdrasil buffer settings if necessary
+        if l:is_yggdrasil
+            silent set filetype=yggdrasil
+            silent 0file
+            silent execute 'set buftype=' . l:buftype
+            call ccls#syntax#additional()
+            if filereadable(l:temp_file_name)
+                call delete(l:temp_file_name)
+            endif
+        endif
+    endtry
 endfunction
 
-" Lazily fetch the children of a node
-function! s:lazy_open_callback(node_data, node) abort
-    let l:bufno = b:yggdrasil_tree['buffer']
-    let l:method = b:yggdrasil_tree['method']
-    let l:Handler = {data -> s:append_children(l:bufno, a:node.id, data)}
-
-    let l:params = {
-    \   'id': a:node_data.id,
-    \   'hierarchy': v:true,
-    \   'levels': g:ccls_levels,
-    \ }
-    call extend(l:params, b:yggdrasil_tree.extra_params, 'force')
-    if has_key(a:node_data, 'kind')
-        let l:params['kind'] = a:node_data.kind
+" Recursively cache the children.
+function! s:add_children_to_cache(data) dict abort
+    if !has_key(a:data, 'children') || len(a:data.children) < 1
+        return
     endif
 
-    call ccls#util#message('Expanding node...')
-    call ccls#lsp#request(l:method, l:params, l:Handler)
-endfunction
-
-" For each child in the list, make a node and append it to the parent
-function! s:make_children(parent_id, level, children_data) abort
-    for l:child in a:children_data
-        let l:file = matchlist(l:child.location.uri, 'file://\(.*\)')[1]
-        let l:line = str2nr(l:child.location.range.start.line) + 1
-        let l:column = str2nr(l:child.location.range.start.character) + 1
-        let l:Callback = function('s:jump_to', [l:file, l:line, l:column])
-        let l:name = has_key(l:child, 'fieldName') ? l:child.fieldName : l:child.name
-
-        " Do not fetch nodes beyond the requested depth
-        " Create a callback to fetch the subtree lazily
-        let l:Lazy_open = v:null
-        if l:child.numChildren > 0 && a:level >= g:ccls_levels
-            let l:Lazy_open = function('s:lazy_open_callback', [l:child])
-        endif
-
-        let l:node = b:yggdrasil_tree.insert(l:name, l:Callback, l:Lazy_open, a:parent_id)
-
-        " Recursive call to create children
-        if l:child.numChildren > 0 && a:level < g:ccls_levels
-            call s:make_children(l:node.id, a:level + 1, l:child.children)
-        endif
+    let l:self.cached_children[a:data.id] = a:data.children
+    for l:child in a:data.children
+        call l:self.add_children_to_cache(l:child)
     endfor
 endfunction
 
-" Callback to create an Yggdrasil window
-function! s:make_tree(method, extra_params, data) abort
+" Handle incominc children data.
+function! s:handle_children_data(Callback, data) dict abort
+    call l:self.add_children_to_cache(a:data)
+    call a:Callback('success', a:data.children)
+endfunction
+
+" Produce the list of children for an object given as optional argument,
+" or the root of the tree when called with no optional argument.
+function! s:get_children(Callback, ...) dict abort
+    if a:0 < 1
+        call a:Callback('success', [l:self.root])
+        return
+    endif
+
+    let l:data = a:1
+
+    " Children already retrieved
+    if has_key(l:data, 'children') && len(l:data.children) > 0
+        call a:Callback('success', l:data.children)
+        return
+    endif
+
+    " Cached children
+    if has_key(l:self.cached_children, l:data.id)
+        call a:Callback('success', l:self.cached_children[l:data.id])
+        return
+    endif
+
+    " Request children from the server
+    let l:params = {
+    \   'id': l:data.id,
+    \   'hierarchy': v:true,
+    \   'levels': g:ccls_levels,
+    \ }
+    call extend(l:params, l:self.extra_params, 'force')
+    if has_key(l:data, 'kind')
+        let l:params['kind'] = l:data.kind
+    endif
+
+    let l:Handler = {data -> l:self.handle_children_data(a:Callback, data)}
+
+    call ccls#util#message('Expanding node...')
+    call s:request(l:self.filetype, l:self.bufnr, l:self.method, l:params, l:Handler)
+endfunction
+
+" Produce the parent of a given object.
+function! s:get_parent(Callback, data) dict abort
+    call a:Callback('failure')
+endfunction
+
+" Get the collapsibleState for a node. The root is returned expanded on
+" the first request only (to avoid issues with cyclic graphs).
+function! s:get_collapsible_state(data) dict abort
+    let l:result = 'none'
+    if a:data.numChildren > 0
+        if a:data.id == l:self.root.id
+            let l:result = l:self.root_state
+            let l:self.root_state = 'collapsed'
+        else
+            let l:result = 'collapsed'
+        endif
+    endif
+    return l:result
+endfunction
+
+" Get the label for a given node.
+function! s:get_label(data) abort
+    if has_key(a:data, 'fieldName') && len(a:data.fieldName)
+        return a:data.fieldName
+    else
+        return a:data.name
+    endif
+endfunction
+
+" Produce the tree item representation for a given object.
+function! s:get_tree_item(Callback, data) dict abort
+    let l:file = matchlist(a:data.location.uri, 'file://\(.*\)')[1]
+    let l:line = str2nr(a:data.location.range.start.line) + 1
+    let l:column = str2nr(a:data.location.range.start.character) + 1
+    let l:tree_item = {
+    \   'id': 0 + a:data.id,
+    \   'command': function('s:jump_to', [l:file, l:line, l:column]),
+    \   'collapsibleState': l:self.get_collapsible_state(a:data),
+    \   'label': s:get_label(a:data),
+    \ }
+    call a:Callback('success', l:tree_item)
+endfunction
+
+" Callback to create a tree view.
+function! s:handle_tree(method, extra_params, data) abort
     if type(a:data) != v:t_dict
         call ccls#util#warning('No hierarchy for the object under cursor')
         return
     endif
 
-    let l:filetype = &filetype
-    let l:calling_buffer = bufnr('%')
+    " Create new buffer in a split
+    let l:position = g:ccls_position =~# '\v^t|l' ? 'topleft' : 'botright'
+    let l:orientation = g:ccls_orientation =~# '^v' ? 'vnew' : 'new'
+    exec l:position . ' ' . g:ccls_size . l:orientation
 
-    call yggdrasil#tree#new(g:ccls_size,
-    \                       g:ccls_position,
-    \                       g:ccls_orientation)
+    let l:provider = {
+    \   'root': a:data,
+    \   'root_state': 'expanded',
+    \   'cached_children': {},
+    \   'method': a:method,
+    \   'filetype': &filetype,
+    \   'bufnr': bufnr('%'),
+    \   'extra_params': a:extra_params,
+    \   'get_collapsible_state': function('s:get_collapsible_state'),
+    \   'add_children_to_cache': function('s:add_children_to_cache'),
+    \   'handle_children_data': function('s:handle_children_data'),
+    \   'getChildren': function('s:get_children'),
+    \   'getParent': function('s:get_parent'),
+    \   'getTreeItem': function('s:get_tree_item'),
+    \ }
+
+    call ccls#yggdrasil#tree#new(l:provider)
 
     call ccls#syntax#additional()
-
-    " Store additional information in the tree structure
-    " to avoid having too many arguments in the callbacks
-    let b:yggdrasil_tree['buffer'] = bufnr('%')
-    let b:yggdrasil_tree['calling_buffer'] = l:calling_buffer
-    let b:yggdrasil_tree['filetype'] = l:filetype
-    let b:yggdrasil_tree['extra_params'] = a:extra_params
-    let b:yggdrasil_tree['method'] = a:method
-
-    call s:make_children(v:null, 0, [a:data])
-    let b:yggdrasil_tree.root.label = a:data.name
-    let b:yggdrasil_tree.root.collapsed = v:false
-    call b:yggdrasil_tree.render()
 endfunction
 
 " Fill the quickfix list with the locations from LSP, and open it
@@ -177,7 +258,7 @@ function! ccls#messages#vars() abort
     \   'position': s:position(),
     \ }
     let l:Handler = function('s:handle_locations')
-    call ccls#lsp#request('$ccls/vars', l:params, l:Handler)
+    call s:request(&filetype, bufnr('%'), '$ccls/vars', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#members() abort
@@ -188,7 +269,7 @@ function! ccls#messages#members() abort
     \   'hierarchy': v:false,
     \ }
     let l:Handler = function('s:handle_locations')
-    call ccls#lsp#request('$ccls/member', l:params, l:Handler)
+    call s:request(&filetype, bufnr('%'), '$ccls/member', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#member_hierarchy() abort
@@ -198,8 +279,8 @@ function! ccls#messages#member_hierarchy() abort
     \   'hierarchy': v:true,
     \   'levels': g:ccls_levels,
     \ }
-    let l:Handler = function('s:make_tree', ['$ccls/member', {}])
-    call ccls#lsp#request('$ccls/member', l:params, l:Handler)
+    let l:Handler = function('s:handle_tree', ['$ccls/member', {}])
+    call s:request(&filetype, bufnr('%'), '$ccls/member', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#inheritance(derived) abort
@@ -211,7 +292,7 @@ function! ccls#messages#inheritance(derived) abort
     \   'derived': a:derived,
     \ }
     let l:Handler = function('s:handle_locations')
-    call ccls#lsp#request('$ccls/inheritance', l:params, l:Handler)
+    call s:request(&filetype, bufnr('%'), '$ccls/inheritance', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#inheritance_hierarchy(derived) abort
@@ -222,8 +303,8 @@ function! ccls#messages#inheritance_hierarchy(derived) abort
     \   'levels': g:ccls_levels,
     \   'derived': a:derived,
     \ }
-    let l:Handler = function('s:make_tree', ['$ccls/inheritance', {'derived': a:derived}])
-    call ccls#lsp#request('$ccls/inheritance', l:params, l:Handler)
+    let l:Handler = function('s:handle_tree', ['$ccls/inheritance', {'derived': a:derived}])
+    call s:request(&filetype, bufnr('%'), '$ccls/inheritance', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#calls(callee) abort
@@ -235,7 +316,7 @@ function! ccls#messages#calls(callee) abort
     \   'callee': a:callee,
     \ }
     let l:Handler = function('s:handle_locations')
-    call ccls#lsp#request('$ccls/call', l:params, l:Handler)
+    call s:request(&filetype, bufnr('%'), '$ccls/call', l:params, l:Handler)
 endfunction
 
 function! ccls#messages#call_hierarchy(callee) abort
@@ -246,6 +327,6 @@ function! ccls#messages#call_hierarchy(callee) abort
     \   'levels': g:ccls_levels,
     \   'callee': a:callee,
     \ }
-    let l:Handler = function('s:make_tree', ['$ccls/call', {'callee': a:callee}])
-    call ccls#lsp#request('$ccls/call', l:params, l:Handler)
+    let l:Handler = function('s:handle_tree', ['$ccls/call', {'callee': a:callee}])
+    call s:request(&filetype, bufnr('%'), '$ccls/call', l:params, l:Handler)
 endfunction

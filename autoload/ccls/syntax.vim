@@ -5,7 +5,8 @@ function! ccls#syntax#additional() abort
     syntax include @cpp syntax/cpp.vim
 
     syntax match CclsAnonymousNamespace "\v\(@<=anonymous namespace\)@=" contained
-    syntax match CclsLabel "\v^(\s|[▸▾])*.*( \[\d+\])@=" contains=YggdrasilMarkCollapsed,YggdrasilMarkExpanded,CclsAnonymousNamespace,@cpp
+    syntax match CclsLabel "\v^(\s|[▸▾•])*.*"
+    \       contains=YggdrasilMarkLeaf,YggdrasilMarkCollapsed,YggdrasilMarkExpanded,CclsAnonymousNamespace,@cpp
 
     highlight def link CclsAnonymousNamespace CppStructure
     highlight def link CclsLabel Identifier

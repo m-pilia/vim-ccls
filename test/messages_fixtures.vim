@@ -5,7 +5,7 @@ function! Test_jump_to(jump_to) abort
 
     new
 
-    call a:jump_to('test/example.cpp', l:row, l:col, l:node)
+    call a:jump_to('test/example.cpp', l:row, l:col)
 
     let l:position = getcurpos()
 
@@ -43,54 +43,31 @@ function! Test_locations(function) abort
     endfor
 endfunction
 
-function! s:assert_inner_nodes(expected_label)
-    AssertEqual 2, len(b:yggdrasil_tree.root.children[1].children)
-    AssertEqual a:expected_label . '_3', b:yggdrasil_tree.root.children[1].children[0].label
-    AssertEqual a:expected_label . '_4', b:yggdrasil_tree.root.children[1].children[1].label
-endfunction
-
 function! Test_hierarchy(function, expected_method, expected_label) abort
     edit test/example.cpp
 
     call a:function()
 
+    " Open all nodes
+    let l:last_line = 0
+    let l:line = line('.')
+    while l:line != l:last_line
+        let l:last_line = line('.')
+        normal! j
+        call b:yggdrasil_tree.set_collapsed_under_cursor(v:false)
+        let l:line = line('.')
+    endwhile
+
     AssertEqual 'yggdrasil', &filetype
-    AssertEqual a:expected_method, b:yggdrasil_tree.method
-    AssertEqual 'node_0', b:yggdrasil_tree.root.label
+    AssertEqual a:expected_method, b:yggdrasil_tree.provider.method
+    AssertEqual a:expected_label . '_0', b:yggdrasil_tree.root.tree_item.label
 
-    if g:ccls_levels >= 1
-        AssertEqual 2, len(b:yggdrasil_tree.root.children)
-        AssertNotEqual type({->0}), type(b:yggdrasil_tree.root.lazy_open)
-        AssertEqual a:expected_label . '_1', b:yggdrasil_tree.root.children[0].label
-        AssertEqual a:expected_label . '_2', b:yggdrasil_tree.root.children[1].label
-        AssertEqual 0, len(b:yggdrasil_tree.root.children[0].children)
+    AssertEqual 2, len(b:yggdrasil_tree.root.children)
+    AssertNotEqual type({->0}), type(b:yggdrasil_tree.root.lazy_open)
+    AssertEqual a:expected_label . '_1', b:yggdrasil_tree.root.children[0].tree_item.label
+    AssertEqual a:expected_label . '_2', b:yggdrasil_tree.root.children[1].tree_item.label
 
-        if g:ccls_levels < 2
-            AssertEqual 0, len(b:yggdrasil_tree.root.children[1].children)
-            AssertEqual type({->0}), type(b:yggdrasil_tree.root.children[1].lazy_open)
-        else
-            AssertNotEqual type({->0}), type(b:yggdrasil_tree.root.children[1].lazy_open)
-            call s:assert_inner_nodes(a:expected_label)
-        endif
-    endif
-endfunction
-
-function! Test_lazy_open(expected_label) abort
-    let l:collapsed = 0
-    let l:recursive = 0
-
-    " Expand root node
-    call b:yggdrasil_tree.set_collapsed_under_cursor(l:collapsed, l:recursive)
-
-    " Move over the collapsed node with two children (node_2)
-    call search(a:expected_label . '_2')
-
-    AssertEqual b:yggdrasil_tree.root.children[1].id, b:yggdrasil_tree.get_node_id_under_cursor().id,
-
-    " Expand lazily the inner node with two children (node_2)
-    call b:yggdrasil_tree.set_collapsed_under_cursor(l:collapsed, l:recursive)
-
-    AssertNotEqual type({->0}), type(b:yggdrasil_tree.root.children[1].lazy_open),
-
-    call s:assert_inner_nodes(a:expected_label)
+    AssertEqual 2, len(b:yggdrasil_tree.root.children[1].children)
+    AssertEqual a:expected_label . '_3', b:yggdrasil_tree.root.children[1].children[0].tree_item.label
+    AssertEqual a:expected_label . '_4', b:yggdrasil_tree.root.children[1].children[1].tree_item.label
 endfunction
