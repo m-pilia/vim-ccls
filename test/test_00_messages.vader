@@ -60,8 +60,8 @@ After:
   if exists('*CocRequestAsync')
     delfunction CocRequestAsync
   endif
-  if exists('*ale#lsp#GetConnections')
-    delfunction ale#lsp#GetConnections
+  if exists('*ale#lsp_linter#SendRequest')
+    delfunction ale#lsp_linter#SendRequest
   endif
 
 
@@ -189,6 +189,8 @@ Execute(Test s:request):
   AssertEqual 1, function_mock.count
   AssertEqual ['bufnr', 'method', 'params', 'handler'], function_mock.args[0]
 
+  " Do not reload this file after testing its functions
+  " to not erase their profiling results
   source autoload/ccls/lsp.vim
 
 
@@ -315,6 +317,8 @@ Execute(Test s:get_children):
   AssertEqual 'success', handler_mock.args[3][0]
   AssertEqual [{'id': 'mock_child'}], handler_mock.args[3][1]
 
+  " Do not reload this file after testing its functions
+  " to not erase their profiling results
   source autoload/ccls/lsp.vim
 
 Execute(Test s:get_collapsible_state):

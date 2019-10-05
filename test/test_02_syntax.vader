@@ -1,0 +1,8 @@
+Before:
+  syntax clear
+
+Execute(Test ccls#syntax#additional):
+  call ccls#syntax#additional()
+
+  AssertSyntax CclsAnonymousNamespace
+  AssertSyntax CclsLabel

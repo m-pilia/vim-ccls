@@ -54,7 +54,7 @@ function! ccls#lsp#request(bufnr, method, params, handler) abort
     let l:log_data = {
     \   'method': a:method,
     \   'params': a:params,
-    \   'handler': string(a:handler)
+    \   'handler': get(a:handler, 'name')
     \ }
     call ccls#util#log('Outgoing', l:log_data)
 

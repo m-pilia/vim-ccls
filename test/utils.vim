@@ -26,3 +26,34 @@ function! GetMessages() abort
     redir END
     return split(l:out, '\n')
 endfunction
+
+" Check if a syntax group exists
+function! s:assert_syntax(group) abort
+    try
+        execute 'syntax list ' a:group
+        Assert 1, 'Syntax group "' . a:group . '" is defined'
+    catch
+        Assert 0, 'Syntax group "' . a:group . '" is not defined'
+    endtry
+endfunction
+
+command! -nargs=1 AssertSyntax :call s:assert_syntax(<f-args>)
+
+" Get a list of echoed messages
+function! s:get_messages() abort
+    redir => l:out
+    silent execute 'messages'
+    redir END
+    return split(l:out, '\n')
+endfunction
+
+" Assert that a certain message was emitted
+function! s:assert_message(message, expected) abort
+    let l:index = index(s:get_messages(), a:message)
+    Assert
+    \   (a:expected ? l:index > -1 : l:index < 0),
+    \   'Message "' . a:message . (a:expected ? '" not emitted' : '" emitted')
+endfunction
+
+command! -nargs=1 AssertMessage :call s:assert_message(<args>, v:true)
+command! -nargs=1 AssertNoMessage :call s:assert_message(<args>, v:false)

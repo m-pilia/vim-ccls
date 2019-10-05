@@ -2,8 +2,10 @@
 
 source test/mock/lsp/client.vim
 
+let g:mock_lsp_server_names = ['ccls']
+
 function! lsp#get_server_names() abort
-    return ['ccls']
+    return g:mock_lsp_server_names
 endfunction
 
 function! lsp#send_request(server, request) abort
