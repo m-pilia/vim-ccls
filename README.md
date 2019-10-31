@@ -112,16 +112,12 @@ The following `<Plug>` mappings are available to interact with a tree buffer:
 <Plug>(yggdrasil-toggle-node)
 <Plug>(yggdrasil-open-node)
 <Plug>(yggdrasil-close-node)
-<Plug>(yggdrasil-open-subtree)
-<Plug>(yggdrasil-close-subtree)
 <Plug>(yggdrasil-execute-node)
 ```
 
 The default key bindings are:
 ```vim
 nmap <silent> <buffer> o    <Plug>(yggdrasil-toggle-node)
-nmap <silent> <buffer> O    <Plug>(yggdrasil-open-subtree)
-nmap <silent> <buffer> C    <Plug>(yggdrasil-close-subtree)
 nmap <silent> <buffer> <cr> <Plug>(yggdrasil-execute-node)
 nnoremap <silent> <buffer> q :q<cr>
 ```

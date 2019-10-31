@@ -1,0 +1,160 @@
+Before:
+  let b:script = 'autoload/ccls/lsp.vim'
+  source test/utils.vim
+  source test/mock/function.vim
+
+  let mock_handler = NewFunctionMock()
+
+  if exists('*lsc#server#userCall')
+    delfunction lsc#server#userCall
+  endif
+  if exists('*lsp#send_request')
+    delfunction lsp#send_request
+  endif
+  if exists('*lsp#get_server_names')
+    delfunction lsp#get_server_names
+  endif
+  if exists('*lsp#client#is_error')
+    delfunction lsp#client#is_error
+  endif
+  if exists('*LanguageClient#Call')
+    delfunction LanguageClient#Call
+  endif
+  if exists('*CocRequestAsync')
+    delfunction CocRequestAsync
+  endif
+  if exists('*ale#lsp_linter#SendRequest')
+    delfunction ale#lsp_linter#SendRequest
+  endif
+
+  messages clear
+
+After:
+  unlet! b:script
+  unlet! mock_handler
+  unlet! Function
+
+Execute(Test s:ale_handler error handling):
+  let Function = GetFunction(b:script, 'ale_handler')
+
+  messages clear
+  call Function(mock_handler.function, '')
+
+  AssertEqual 0, mock_handler.count
+  AssertMessage 'vim-ccls: LSP error'
+
+  messages clear
+  call Function(mock_handler.function, {'error': 0})
+
+  AssertEqual 0, mock_handler.count
+  AssertMessage 'vim-ccls: LSP error'
+
+  messages clear
+  call Function(mock_handler.function, {})
+
+  AssertEqual 0, mock_handler.count
+  AssertMessage 'vim-ccls: LSP error'
+
+  messages clear
+  call Function(mock_handler.function, {'result': 'mock_result'})
+
+  AssertEqual 1, mock_handler.count
+  AssertEqual 'mock_result', mock_handler.args[0][0]
+  AssertNoMessage 'vim-ccls: LSP error'
+
+
+Execute(Test s:vim_lsp_handler error handling):
+  source test/mock/lsp/client.vim
+  let Function = GetFunction(b:script, 'vim_lsp_handler')
+
+  messages clear
+  call Function(mock_handler.function, {'response': 'non_empty_message'})
+
+  AssertEqual 0, mock_handler.count
+  AssertMessage 'vim-ccls: LSP error'
+
+  messages clear
+  call Function(mock_handler.function, {'response': {'error': 0}})
+
+  AssertEqual 0, mock_handler.count
+  AssertMessage 'vim-ccls: LSP error'
+
+  messages clear
+  call Function(mock_handler.function, {'response': {'result': 'mock_result'}})
+
+  AssertEqual 1, mock_handler.count
+  AssertEqual 'mock_result', mock_handler.args[0][0]
+  AssertNoMessage 'vim-ccls: LSP error'
+
+
+Execute(Test s:lcn_handler error handling):
+  let Function = GetFunction(b:script, 'lcn_handler')
+
+  messages clear
+  call Function(mock_handler.function, '')
+
+  AssertEqual 0, mock_handler.count
+  AssertMessage 'vim-ccls: LSP error'
+
+  messages clear
+  call Function(mock_handler.function, {})
+
+  AssertEqual 0, mock_handler.count
+  AssertMessage 'vim-ccls: LSP error'
+
+  messages clear
+  call Function(mock_handler.function, {'error': 0})
+
+  AssertEqual 0, mock_handler.count
+  AssertMessage 'vim-ccls: LSP error'
+
+  messages clear
+  call Function(mock_handler.function, {'result': 'mock_result'})
+
+  AssertEqual 1, mock_handler.count
+  AssertEqual 'mock_result', mock_handler.args[0][0]
+  AssertNoMessage 'vim-ccls: LSP error'
+
+
+Execute(Test s:coc_handler error handling):
+  let Function = GetFunction(b:script, 'coc_handler')
+
+  messages clear
+  call Function(mock_handler.function, 1, 'mock_result')
+
+  AssertEqual 0, mock_handler.count
+  AssertMessage 'vim-ccls: LSP error'
+
+  messages clear
+  call Function(mock_handler.function, 0, 'mock_result')
+
+  AssertEqual 1, mock_handler.count
+  AssertEqual 'mock_result', mock_handler.args[0][0]
+  AssertNoMessage 'vim-ccls: LSP error'
+
+
+Execute(Test ccls#lsp#request with no LSP client):
+  call ccls#lsp#request('bufnr', 'method', 'params', mock_handler.function)
+
+  AssertEqual 0, mock_handler.count
+  AssertMessage 'vim-ccls: No LSP plugin found!'
+
+
+Execute(Test ccls#lsp#request with vim-lsp and ccls server unavailable):
+  source test/mock/lsp.vim
+  let g:mock_lsp_server_names = ['some_server', 'some_other_server']
+
+  call ccls#lsp#request('bufnr', 'method', 'params', mock_handler.function)
+
+  AssertEqual 0, mock_handler.count
+  AssertMessage 'vim-ccls: ccls language server unvailable'
+
+
+Execute(Test ccls#lsp#request with ALE throwing an exception):
+  source test/mock/ale/lsp_linter.vim
+  let g:mock_ale_fail = 1
+
+  call ccls#lsp#request('bufnr', 'method', 'params', mock_handler.function)
+
+  AssertEqual 0, mock_handler.count
+  AssertMessage 'vim-ccls: LSP error'
