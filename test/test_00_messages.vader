@@ -634,11 +634,12 @@ Execute(Test ccls#messages#inheritance_hierarchy with ALE backend):
 Execute(Test s:make_tree with no valid symbol under cursor):
   let Handle_tree = GetFunction(b:script, 'handle_tree')
 
+  let filetype = 'c'
   let method = 0 " Irrelevant
   let extra_params = {} " Irrelevant
   let data = ''
 
-  call Handle_tree(method, extra_params, data)
+  call Handle_tree(filetype, method, extra_params, data)
 
   AssertNotEqual 'yggdrasil', &filetype
   AssertEqual 'vim-ccls: No hierarchy for the object under cursor', GetMessages()[-1]
