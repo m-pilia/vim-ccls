@@ -3,7 +3,7 @@ scriptencoding utf-8
 " Callback to retrieve the tree item representation of an object.
 function! s:node_get_tree_item_cb(node, object, status, tree_item) abort
     if a:status ==? 'success'
-        let l:new_node = s:node_new(a:node.tree, a:object, a:tree_item, a:node.id)
+        let l:new_node = s:node_new(a:node.tree, a:object, a:tree_item, a:node)
         call add(a:node.children, l:new_node)
         call s:tree_render(l:new_node.tree)
     endif
@@ -26,22 +26,27 @@ function! s:node_set_collapsed(collapsed) dict abort
     let l:self.collapsed = a:collapsed < 0 ? !l:self.collapsed : !!a:collapsed
 endfunction
 
-" Return the node object whose id is equal to {id}. Note that this uses the
-" internal integer id representing the node, not the string id from the
-" provider.
-function! s:node_find(id) dict abort
-    if l:self.id == a:id
-        return l:self
+" Given a funcref {Condition}, return a list of all nodes in the subtree of
+" {node} for which {Condition} evaluates to v:true.
+function! s:search_subtree(node, Condition) abort
+    if a:Condition(a:node)
+        return [a:node]
     endif
-    if len(l:self.children) < 1
-        return v:null
+    if len(a:node.children) < 1
+        return []
     endif
-    for l:child in l:self.children
-        let l:result = l:child.find(a:id)
-        if type(l:result) == type({})
-            return l:result
-        endif
+    let l:result = []
+    for l:child in a:node.children
+        let l:result = l:result + s:search_subtree(l:child, a:Condition)
     endfor
+    return l:result
+endfunction
+
+" Execute the action associated to a node
+function! s:node_exec() dict abort
+    if has_key(l:self.tree_item, 'command')
+        call l:self.tree_item.command()
+    endif
 endfunction
 
 " Return the depth level of the node in the tree. The level is defined
@@ -66,7 +71,7 @@ function! s:node_render(level) dict abort
     endif
 
     let l:label = split(l:self.tree_item.label, "\n")
-    call extend(l:self.tree.index, map(range(len(l:label)), l:self.id))
+    call extend(l:self.tree.index, map(range(len(l:label)), 'l:self'))
 
     let l:repr = l:indent . l:mark . l:label[0]
     \          . join(map(l:label[1:], {_, l -> "\n" . l:indent . '  ' . l}))
@@ -94,7 +99,6 @@ endfunction
 " true, the children of the node will be fetched when the node is expanded by
 " the user.
 function! s:node_new(tree, object, tree_item, parent) abort
-    let l:collapsibleState = a:tree_item.collapsibleState
     let a:tree.maxid += 1
     return {
     \ 'id': a:tree.maxid,
@@ -102,12 +106,11 @@ function! s:node_new(tree, object, tree_item, parent) abort
     \ 'object': a:object,
     \ 'tree_item': a:tree_item,
     \ 'parent': a:parent,
-    \ 'collapsed': l:collapsibleState ==? 'collapsed',
-    \ 'lazy_open': l:collapsibleState ==? 'collapsed' || l:collapsibleState ==? 'expanded',
+    \ 'collapsed': a:tree_item.collapsibleState ==? 'collapsed',
+    \ 'lazy_open': a:tree_item.collapsibleState !=? 'none',
     \ 'children': [],
     \ 'level': function('s:node_level'),
-    \ 'find': function('s:node_find'),
-    \ 'exec': has_key(a:tree_item, 'command') ? a:tree_item.command : {-> 0},
+    \ 'exec': function('s:node_exec'),
     \ 'set_collapsed': function('s:node_set_collapsed'),
     \ 'render': function('s:node_render'),
     \ }
@@ -128,8 +131,7 @@ endfunction
 " Return the node currently under the cursor from the given {tree}.
 function! s:get_node_under_cursor(tree) abort
     let l:index = min([line('.'), len(a:tree.index) - 1])
-    let l:id = a:tree.index[l:index]
-    return a:tree.root.find(l:id)
+    return a:tree.index[l:index]
 endfunction
 
 " Expand or collapse the node under cursor, and render the tree.
@@ -167,10 +169,30 @@ function! s:tree_render(tree) abort
     call setpos('.', l:cursor)
 endfunction
 
-" Update the tree, e.g. if nodes have changed.
-function! s:tree_update() dict abort
-    call l:self.provider.getChildren({status, obj ->
-    \   l:self.provider.getTreeItem(function('s:tree_set_root_cb', [l:self, obj[0]]), obj[0])})
+" If {status} equals 'success', update all nodes of {tree} representing
+" an {obect} with given {tree_item} representation.
+function! s:node_update(tree, object, status, tree_item) abort
+    if a:status !=? 'success'
+        return
+    endif
+    for l:node in s:search_subtree(a:tree.root, {n -> n.object == a:object})
+        let l:node.tree_item = a:tree_item
+        let l:node.children = []
+        let l:node.lazy_open = a:tree_item.collapsibleState !=? 'none'
+    endfor
+    call s:tree_render(a:tree)
+endfunction
+
+" Update the view if nodes have changed. If called with no arguments,
+" update the whole tree. If called with an {object} as argument, update
+" all the subtrees of nodes corresponding to {object}.
+function! s:tree_update(...) dict abort
+    if a:0 < 1
+        call l:self.provider.getChildren({status, obj ->
+        \   l:self.provider.getTreeItem(function('s:tree_set_root_cb', [l:self, obj[0]]), obj[0])})
+    else
+        call l:self.provider.getTreeItem(function('s:node_update', [l:self, a:1]), a:1)
+    endif
 endfunction
 
 " Apply syntax to an Yggdrasil buffer
@@ -229,7 +251,7 @@ endfunction
 "
 " The {bufnr} stores the buffer number of the view, {maxid} is the highest
 " known internal identifier of the nodes. The {index} is a list that
-" maps line numbers to node internal indices.
+" maps line numbers to nodes.
 function! ccls#yggdrasil#tree#new(provider) abort
     let b:yggdrasil_tree = {
     \ 'bufnr': bufnr('.'),
