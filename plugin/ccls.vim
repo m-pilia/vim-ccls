@@ -7,6 +7,14 @@ if !exists('g:ccls_close_on_jump')
     let g:ccls_close_on_jump = v:false
 endif
 
+if !exists('g:ccls_float_width')
+    let g:ccls_float_width = 50
+endif
+
+if !exists('g:ccls_float_height')
+    let g:ccls_float_height = 20
+endif
+
 if !exists('g:ccls_levels')
     let g:ccls_levels = 1
 endif
@@ -27,20 +35,20 @@ if !exists('g:ccls_quiet')
     let g:ccls_quiet = 0
 endif
 
-command! CclsVars             call ccls#messages#vars()
+command! CclsVars                      call ccls#messages#vars()
 
-command! CclsMembers          call ccls#messages#members()
+command! CclsMembers                   call ccls#messages#members()
 
-command! CclsMemberHierarchy  call ccls#messages#member_hierarchy()
+command! -nargs=* CclsMemberHierarchy  call ccls#messages#member_hierarchy(<f-args>)
 
-command! CclsBase             call ccls#messages#inheritance(v:false)
-command! CclsDerived          call ccls#messages#inheritance(v:true)
+command! CclsBase                      call ccls#messages#inheritance(v:false)
+command! CclsDerived                   call ccls#messages#inheritance(v:true)
 
-command! CclsBaseHierarchy    call ccls#messages#inheritance_hierarchy(v:false)
-command! CclsDerivedHierarchy call ccls#messages#inheritance_hierarchy(v:true)
+command! -nargs=* CclsBaseHierarchy    call ccls#messages#inheritance_hierarchy(v:false, <f-args>)
+command! -nargs=* CclsDerivedHierarchy call ccls#messages#inheritance_hierarchy(v:true, <f-args>)
 
-command! CclsCallers          call ccls#messages#calls(v:false)
-command! CclsCallees          call ccls#messages#calls(v:true)
+command! CclsCallers                   call ccls#messages#calls(v:false)
+command! CclsCallees                   call ccls#messages#calls(v:true)
 
-command! CclsCallHierarchy    call ccls#messages#call_hierarchy(v:false)
-command! CclsCalleeHierarchy  call ccls#messages#call_hierarchy(v:true)
+command! -nargs=* CclsCallHierarchy    call ccls#messages#call_hierarchy(v:false, <f-args>)
+command! -nargs=* CclsCalleeHierarchy  call ccls#messages#call_hierarchy(v:true, <f-args>)

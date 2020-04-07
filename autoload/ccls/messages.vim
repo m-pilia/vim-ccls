@@ -193,16 +193,33 @@ function! s:get_tree_item(Callback, data) dict abort
 endfunction
 
 " Callback to create a tree view.
-function! s:handle_tree(filetype, method, extra_params, data) abort
+function! s:handle_tree(filetype, method, extra_params, viewport, data) abort
     if type(a:data) != v:t_dict
         call ccls#util#warning('No hierarchy for the object under cursor')
         return
     endif
 
     " Create new buffer in a split
-    let l:position = g:ccls_position =~# '\v^t|l' ? 'topleft' : 'botright'
-    let l:orientation = g:ccls_orientation =~# '^v' ? 'vnew' : 'new'
-    exec l:position . ' ' . g:ccls_size . l:orientation
+    if a:viewport ==? 'float' && exists('*nvim_open_win')
+        let s:buffer_options = {
+        \   'style': 'minimal',
+        \   'relative': 'cursor',
+        \   'width': g:ccls_float_width,
+        \   'height': g:ccls_float_height,
+        \   'row': 0,
+        \   'col': 0,
+        \ }
+        let s:float_id = nvim_open_win(nvim_create_buf(v:false, v:true), 0, s:buffer_options)
+        call win_gotoid(s:float_id)
+        augroup vim_ccls_float_close
+            autocmd! * <buffer>
+            autocmd WinLeave <buffer> call nvim_win_close(s:float_id, v:true)
+        augroup END
+    else
+        let l:position = g:ccls_position =~# '\v^t|l' ? 'topleft' : 'botright'
+        let l:orientation = g:ccls_orientation =~# '^v' ? 'vnew' : 'new'
+        exec l:position . ' ' . g:ccls_size . l:orientation
+    endif
 
     let l:provider = {
     \   'root': a:data,
@@ -259,6 +276,7 @@ function! ccls#messages#vars() abort
     \ }
     let l:Handler = function('s:handle_locations')
     call s:request(&filetype, bufnr('%'), '$ccls/vars', l:params, l:Handler)
+    normal! m'
 endfunction
 
 function! ccls#messages#members() abort
@@ -270,17 +288,20 @@ function! ccls#messages#members() abort
     \ }
     let l:Handler = function('s:handle_locations')
     call s:request(&filetype, bufnr('%'), '$ccls/member', l:params, l:Handler)
+    normal! m'
 endfunction
 
-function! ccls#messages#member_hierarchy() abort
+function! ccls#messages#member_hierarchy(...) abort
     let l:params = {
     \   'textDocument': s:text_document_identifier(),
     \   'position': s:position(),
     \   'hierarchy': v:true,
     \   'levels': g:ccls_levels,
     \ }
-    let l:Handler = function('s:handle_tree', [&filetype, '$ccls/member', {}])
+    let l:viewport = index(a:000, '-float') >= 0 ? 'float' : 'split'
+    let l:Handler = function('s:handle_tree', [&filetype, '$ccls/member', {}, l:viewport])
     call s:request(&filetype, bufnr('%'), '$ccls/member', l:params, l:Handler)
+    normal! m'
 endfunction
 
 function! ccls#messages#inheritance(derived) abort
@@ -293,9 +314,10 @@ function! ccls#messages#inheritance(derived) abort
     \ }
     let l:Handler = function('s:handle_locations')
     call s:request(&filetype, bufnr('%'), '$ccls/inheritance', l:params, l:Handler)
+    normal! m'
 endfunction
 
-function! ccls#messages#inheritance_hierarchy(derived) abort
+function! ccls#messages#inheritance_hierarchy(derived, ...) abort
     let l:params = {
     \   'textDocument': s:text_document_identifier(),
     \   'position': s:position(),
@@ -303,8 +325,10 @@ function! ccls#messages#inheritance_hierarchy(derived) abort
     \   'levels': g:ccls_levels,
     \   'derived': a:derived,
     \ }
-    let l:Handler = function('s:handle_tree', [&filetype, '$ccls/inheritance', {'derived': a:derived}])
+    let l:viewport = index(a:000, '-float') >= 0 ? 'float' : 'split'
+    let l:Handler = function('s:handle_tree', [&filetype, '$ccls/inheritance', {'derived': a:derived}, l:viewport])
     call s:request(&filetype, bufnr('%'), '$ccls/inheritance', l:params, l:Handler)
+    normal! m'
 endfunction
 
 function! ccls#messages#calls(callee) abort
@@ -317,9 +341,10 @@ function! ccls#messages#calls(callee) abort
     \ }
     let l:Handler = function('s:handle_locations')
     call s:request(&filetype, bufnr('%'), '$ccls/call', l:params, l:Handler)
+    normal! m'
 endfunction
 
-function! ccls#messages#call_hierarchy(callee) abort
+function! ccls#messages#call_hierarchy(callee, ...) abort
     let l:params = {
     \   'textDocument': s:text_document_identifier(),
     \   'position': s:position(),
@@ -327,6 +352,8 @@ function! ccls#messages#call_hierarchy(callee) abort
     \   'levels': g:ccls_levels,
     \   'callee': a:callee,
     \ }
-    let l:Handler = function('s:handle_tree', [&filetype, '$ccls/call', {'callee': a:callee}])
+    let l:viewport = index(a:000, '-float') >= 0 ? 'float' : 'split'
+    let l:Handler = function('s:handle_tree', [&filetype, '$ccls/call', {'callee': a:callee}, l:viewport])
     call s:request(&filetype, bufnr('%'), '$ccls/call', l:params, l:Handler)
+    normal! m'
 endfunction

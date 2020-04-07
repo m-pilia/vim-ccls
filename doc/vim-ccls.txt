@@ -12,6 +12,8 @@ CONTENTS                                                   *vim-ccls-contents*
       g:ccls_size.................|g:ccls_size|
       g:ccls_position.............|g:ccls_position|
       g:ccls_orientation..........|g:ccls_orientation|
+      g:ccls_float_width..........|g:ccls_float_width|
+      g:ccls_float_height.........|g:ccls_float_height|
       g:ccls_log_file.............|g:ccls_log_file|
       g:ccls_quiet................|g:ccls_quiet|
     Commands......................|vim-ccls-commands|
@@ -143,6 +145,32 @@ g:ccls_orientation                                        *g:ccls_orientation*
     let g:ccls_orientation = 'horizontal'
 <
 
+g:ccls_float_width                                        *g:ccls_float_width*
+    Type: |Number|
+    Default: `50`
+
+    Specify the width of the floating window for hierarchy trees (Neovim
+    only: |api-window|).
+
+    Example:
+>
+    " Set a width of 40 for the floating window
+    let g:ccls_float_width = 40
+<
+
+g:ccls_float_height                                      *g:ccls_float_height*
+    Type: |Number|
+    Default: `20`
+
+    Specify the height of the floating window for hierarchy trees (Neovim
+    only: |api-window|).
+
+    Example:
+>
+    " Set a height of 20 for the floating window
+    let g:ccls_float_width = 20
+<
+
 g:ccls_log_file                                              *g:ccls_log_file*
     Type: |String|
     Default: not set
@@ -168,11 +196,14 @@ g:ccls_quiet                                                    *g:ccls_quiet*
 ==============================================================================
 Commands                                                   *vim-ccls-commands*
 
+Hierarchy commands support an optional parameter (Neovim only) to open
+the resulting tree in a floating window.
+
 CclsBase                                                            *CclsBase*
 
 Get a list of base classes for the symbol under the cursor.
 
-CclsBaseHierarchy                                          *CclsBaseHierarchy*
+CclsBaseHierarchy [-float]                                 *CclsBaseHierarchy*
 
 Get a tree of inheritance ancestors for the symbol under cursor.
 
@@ -180,7 +211,7 @@ CclsDerived                                                      *CclsDerived*
 
 Get a list of derived classes for the symbol under the cursor.
 
-CclsDerivedHierarchy                                    *CclsDerivedHierarchy*
+CclsDerivedHierarchy [-float]                           *CclsDerivedHierarchy*
 
 Get a tree of inheritance descendants for the symbol under cursor.
 
@@ -188,7 +219,7 @@ CclsCallers                                                      *CclsCallers*
 
 Get a list of functions calling the function under the cursor.
 
-CclsCallHierarchy                                          *CclsCallHierarchy*
+CclsCallHierarchy [-float]                                 *CclsCallHierarchy*
 
 Get a hierarchy of functions calling the function under the cursor.
 
@@ -196,7 +227,7 @@ CclsCallees                                                      *CclsCallees*
 
 Get a list of functions called by the function under the cursor.
 
-CclsCalleeHierarchy                                      *CclsCalleeHierarchy*
+CclsCalleeHierarchy [-float]                             *CclsCalleeHierarchy*
 
 Get a hierarchy of functions called by the function under the cursor.
 
@@ -204,7 +235,7 @@ CclsMembers                                                      *CclsMembers*
 
 Get a lists of members for the symbol under cursor.
 
-CclsMemberHierarchy                                      *CclsMemberHierarchy*
+CclsMemberHierarchy [-float]                             *CclsMemberHierarchy*
 
 Get a tree of members for the symbol under cursor.
 

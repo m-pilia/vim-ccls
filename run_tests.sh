@@ -10,11 +10,9 @@ if [ $# -gt 0 ] && [ "$1" == "--profile" ]; then
 fi
 
 # Using the Docker image developed for ALE
-docker_image=w0rp/ale
-docker_image_id=67896c9c2c0f
+docker_image=martinopilia/vim-ccls
 
-docker images -q "${docker_image}" | grep "^${docker_image_id}" > /dev/null \
-    || docker pull "${docker_image}"
+docker pull "${docker_image}" || docker build -t "${docker_image}" .
 
 vim_binaries=$(docker run --rm "${docker_image}" ls /vim-build/bin \
              | grep -E '^(neo)?vim' )
@@ -58,6 +56,20 @@ docker run \
     -w /testplugin \
     "${docker_image}" \
         find . -type f -name '*.vim' -exec vint -s '{}' + 2>&1
+
+# shellcheck disable=SC2181
+if [ "$?" -ne 0 ]; then
+    exit_status=1
+fi
+
+# Lint Dockerfile
+docker run \
+    --rm \
+    -i \
+    -v "$(pwd)":/mnt \
+    -w /mnt \
+    'hadolint/hadolint:v1.17.2' \
+    hadolint Dockerfile
 
 # shellcheck disable=SC2181
 if [ "$?" -ne 0 ]; then

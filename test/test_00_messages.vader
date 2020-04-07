@@ -2,6 +2,8 @@ Before:
   let b:script = 'autoload/ccls/messages.vim'
   unlet! g:vim_ccls_plugin_loaded
   unlet! g:ccls_close_on_jump
+  let g:ccls_float_width = 40
+  let g:ccls_float_height = 30
   source test/utils.vim
   source test/mock/ccls.vim
   source test/messages_fixtures.vim
@@ -12,6 +14,9 @@ After:
   normal <c-w><c-o>
 
   unlet! b:script
+
+  unlet! g:ccls_float_width
+  unlet! g:ccls_float_height
 
   unlet! Handle_tree
   unlet! Jump_to
@@ -525,36 +530,36 @@ Execute(Test ccls#messages#calls with ALE backend):
 Execute(Test ccls#messages#call_hierarchy with vim-lsc backend):
   source test/mock/lsc/server.vim
 
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node', v:false)
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node', v:false)
 
 
 Execute(Test ccls#messages#call_hierarchy with vim-lsp backend):
   source test/mock/lsp.vim
 
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node', v:false)
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node', v:false)
 
 
 Execute(Test ccls#messages#call_hierarchy with LanguageClient-neovim backend):
   source test/mock/LanguageClient.vim
 
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node', v:false)
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node', v:false)
 
 
 Execute(Test ccls#messages#call_hierarchy with coc.nvim backend):
   source test/mock/coc.vim
 
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node', v:false)
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node', v:false)
 
 
 Execute(Test ccls#messages#call_hierarchy with ALE backend):
   source test/mock/ale/lsp_linter.vim
 
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node')
-  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node')
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:false]), '$ccls/call', 'node', v:false)
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true]), '$ccls/call', 'node', v:false)
 
 
 
@@ -564,31 +569,31 @@ Execute(Test ccls#messages#call_hierarchy with ALE backend):
 Execute(Test ccls#messages#member_hierarchy with vim-lsc backend):
   source test/mock/lsc/server.vim
 
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field', v:false)
 
 
 Execute(Test ccls#messages#member_hierarchy with vim-lsp backend):
   source test/mock/lsp.vim
 
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field', v:false)
 
 
 Execute(Test ccls#messages#member_hierarchy with LanguageClient-neovim backend):
   source test/mock/LanguageClient.vim
 
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field', v:false)
 
 
 Execute(Test ccls#messages#member_hierarchy with coc.nvim backend):
   source test/mock/coc.vim
 
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field', v:false)
 
 
 Execute(Test ccls#messages#member_hierarchy with ALE backend):
   source test/mock/ale/lsp_linter.vim
 
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field')
+  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field', v:false)
 
 
 " Inheritance hierarchy
@@ -597,36 +602,44 @@ Execute(Test ccls#messages#member_hierarchy with ALE backend):
 Execute(Test ccls#messages#inheritance_hierarchy with vim-lsc backend):
   source test/mock/lsc/server.vim
 
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node', v:false)
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node', v:false)
 
 
 Execute(Test ccls#messages#inheritance_hierarchy with vim-lsp backend):
   source test/mock/lsp.vim
 
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node', v:false)
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node', v:false)
 
 
 Execute(Test ccls#messages#inheritance_hierarchy with LanguageClient-neovim backend):
   source test/mock/LanguageClient.vim
 
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node', v:false)
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node', v:false)
 
 
 Execute(Test ccls#messages#inheritance_hierarchy with coc.nvim backend):
   source test/mock/coc.vim
 
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node', v:false)
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node', v:false)
 
 
 Execute(Test ccls#messages#inheritance_hierarchy with ALE backend):
   source test/mock/ale/lsp_linter.vim
 
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node')
-  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node')
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:false]), '$ccls/inheritance', 'node', v:false)
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true]), '$ccls/inheritance', 'node', v:false)
+
+
+Execute(Test hierarchy calls with float window):
+  source test/mock/ale/lsp_linter.vim
+
+  call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true, '-float']), '$ccls/call', 'node', v:true)
+  call Test_hierarchy(function('ccls#messages#member_hierarchy', ['-float']), '$ccls/member', 'field', v:true)
+  call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true, '-float']), '$ccls/inheritance', 'node', v:true)
 
 
 " Invalid hierarchy
@@ -639,7 +652,7 @@ Execute(Test s:make_tree with no valid symbol under cursor):
   let extra_params = {} " Irrelevant
   let data = ''
 
-  call Handle_tree(filetype, method, extra_params, data)
+  call Handle_tree(filetype, method, extra_params, data, 'split')
 
   AssertNotEqual 'yggdrasil', &filetype
   AssertEqual 'vim-ccls: No hierarchy for the object under cursor', GetMessages()[-1]

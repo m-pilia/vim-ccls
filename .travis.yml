@@ -5,7 +5,7 @@ services:
 language: generic
 
 install:
-    - pip install --user covimerage==0.1.6
+    - pip install --user covimerage==0.2.1
 
 script:
     - ./run_tests.sh --profile
@@ -16,7 +16,7 @@ script:
 
 after_success: |
     set -eo pipefail
-    profile_file=$(ls | grep 'profile_file' | sort | tail -n 1)
+    profile_file=$(ls | grep 'profile_file.*0\.4\.3')
     python -m covimerage write_coverage "${profile_file}"
     sed -i "s,/testplugin/,$PWD/,g" .coverage_covimerage
     python -m covimerage -vv xml
