@@ -195,6 +195,11 @@ function! s:tree_update(...) dict abort
     endif
 endfunction
 
+" Destroy the tree view. Wipe out the buffer containing it.
+function! s:tree_wipe() dict abort
+    execute 'bwipeout' . l:self.bufnr
+endfunction
+
 " Apply syntax to an Yggdrasil buffer
 function! s:filetype_syntax() abort
     syntax clear
@@ -237,11 +242,13 @@ function! s:filetype_settings() abort
     nnoremap <silent> <buffer> <Plug>(yggdrasil-execute-node)
         \ :call b:yggdrasil_tree.exec_node_under_cursor()<cr>
 
+    nnoremap <silent> <buffer> <Plug>(yggdrasil-wipe-tree)
+        \ :call b:yggdrasil_tree.wipe()<cr>
+
     if !exists('g:yggdrasil_no_default_maps')
         nmap <silent> <buffer> o    <Plug>(yggdrasil-toggle-node)
         nmap <silent> <buffer> <cr> <Plug>(yggdrasil-execute-node)
-
-        nnoremap <silent> <buffer> q :q<cr>
+        nmap <silent> <buffer> q    <Plug>(yggdrasil-wipe-tree)
     endif
 endfunction
 
@@ -254,7 +261,7 @@ endfunction
 " maps line numbers to nodes.
 function! ccls#yggdrasil#tree#new(provider) abort
     let b:yggdrasil_tree = {
-    \ 'bufnr': bufnr('.'),
+    \ 'bufnr': bufnr('%'),
     \ 'maxid': -1,
     \ 'root': {},
     \ 'index': [],
@@ -262,6 +269,7 @@ function! ccls#yggdrasil#tree#new(provider) abort
     \ 'set_collapsed_under_cursor': function('s:tree_set_collapsed_under_cursor'),
     \ 'exec_node_under_cursor': function('s:tree_exec_node_under_cursor'),
     \ 'update': function('s:tree_update'),
+    \ 'wipe': function('s:tree_wipe'),
     \ }
 
     augroup vim_yggdrasil

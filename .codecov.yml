@@ -1,2 +1,8 @@
 ignore:
   - "autoload/ccls/yggdrasil"
+coverage:
+  status:
+    project:
+      default:
+        target: 95%
+

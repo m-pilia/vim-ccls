@@ -43,7 +43,7 @@ function! Test_locations(function) abort
     endfor
 endfunction
 
-function! Test_hierarchy(function, expected_method, expected_label) abort
+function! Test_hierarchy(function, expected_method, expected_label, expected_float) abort
     edit test/example.cpp
 
     call a:function()
@@ -70,4 +70,12 @@ function! Test_hierarchy(function, expected_method, expected_label) abort
     AssertEqual 2, len(b:yggdrasil_tree.root.children[1].children)
     AssertEqual a:expected_label . '_3', b:yggdrasil_tree.root.children[1].children[0].tree_item.label
     AssertEqual a:expected_label . '_4', b:yggdrasil_tree.root.children[1].children[1].tree_item.label
+
+    if exists('*nvim_open_win') && a:expected_float
+        let l:props = nvim_win_get_config(0)
+        AssertEqual 'win', l:props['relative']
+        AssertEqual g:ccls_float_width, l:props['width']
+        AssertEqual g:ccls_float_height, l:props['height']
+        close " close floating window
+    endif
 endfunction

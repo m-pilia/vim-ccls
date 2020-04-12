@@ -3,6 +3,7 @@ vim-ccls: vim plugin for the ccls Language Server
 [![Travis CI Build Status](https://travis-ci.org/m-pilia/vim-ccls.svg?branch=master)](https://travis-ci.org/m-pilia/vim-ccls)
 [![codecov](https://codecov.io/gh/m-pilia/vim-ccls/branch/master/graph/badge.svg)](https://codecov.io/gh/m-pilia/vim-ccls/branch/master)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/m-pilia/vim-ccls/blob/master/LICENSE)
+![Docker hub](https://img.shields.io/docker/cloud/build/martinopilia/vim-ccls)
 
 This plugin supports some additional methods provided by
 [ccls](https://github.com/MaskRay/ccls), which are not part of the standard
@@ -85,6 +86,9 @@ list](http://vimdoc.sourceforge.net/htmldoc/quickfix.html).
 * **CclsVars**:
   Get a list of document variables.
 
+Hierarchy commands accept an optional parameter `-float` to open the hierarchy
+in a floating window instead of a split (Neovim only).
+
 Settings
 ========
 
@@ -105,6 +109,12 @@ The size and position of the tree window can be set:
 let g:ccls_size = 50
 let g:ccls_position = 'botright'
 let g:ccls_orientation = 'horizontal'
+```
+
+The size of the floating window (Neovim only) can be controlled:
+```vim
+let g:ccls_float_width = 50
+let g:ccls_float_height = 20
 ```
 
 The following `<Plug>` mappings are available to interact with a tree buffer:
