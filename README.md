@@ -14,6 +14,7 @@ features. Currently supported LSP clients are:
 * [ALE](https://github.com/w0rp/ale)
 * [coc.nvim](https://github.com/neoclide/coc.nvim)
 * [LanguageClient-neovim](https://github.com/autozimu/LanguageClient-neovim)
+* [nvim-lsp](https://github.com/neovim/nvim-lsp)
 * [vim-lsc](https://github.com/natebosch/vim-lsc)
 * [vim-lsp](https://github.com/prabirshrestha/vim-lsp)
 
@@ -48,6 +49,7 @@ your LSP client to use it (example instructions in the ccls wiki):
 * [ALE](https://github.com/MaskRay/ccls/wiki/ALE)
 * [coc.nvim](https://github.com/MaskRay/ccls/wiki/coc.nvim)
 * [LanguageClient-neovim](https://github.com/MaskRay/ccls/wiki/LanguageClient-neovim)
+* [nvim-lsp](https://github.com/neovim/nvim-lsp#ccls)
 * [vim-lsc](https://github.com/MaskRay/ccls/wiki/vim-lsc)
 * [vim-lsp](https://github.com/MaskRay/ccls/wiki/vim-lsp)
 
