@@ -193,7 +193,7 @@ function! s:get_tree_item(Callback, data) dict abort
 endfunction
 
 " Callback to create a tree view.
-function! s:handle_tree(filetype, method, extra_params, viewport, data) abort
+function! s:handle_tree(bufnr, filetype, method, extra_params, viewport, data) abort
     if type(a:data) != v:t_dict
         call ccls#util#warning('No hierarchy for the object under cursor')
         return
@@ -227,7 +227,7 @@ function! s:handle_tree(filetype, method, extra_params, viewport, data) abort
     \   'cached_children': {},
     \   'method': a:method,
     \   'filetype': a:filetype,
-    \   'bufnr': bufnr('%'),
+    \   'bufnr': a:bufnr,
     \   'extra_params': a:extra_params,
     \   'get_collapsible_state': function('s:get_collapsible_state'),
     \   'add_children_to_cache': function('s:add_children_to_cache'),
@@ -298,9 +298,10 @@ function! ccls#messages#member_hierarchy(...) abort
     \   'hierarchy': v:true,
     \   'levels': g:ccls_levels,
     \ }
+    let l:bufnr = bufnr('%')
     let l:viewport = index(a:000, '-float') >= 0 ? 'float' : 'split'
-    let l:Handler = function('s:handle_tree', [&filetype, '$ccls/member', {}, l:viewport])
-    call s:request(&filetype, bufnr('%'), '$ccls/member', l:params, l:Handler)
+    let l:Handler = function('s:handle_tree', [l:bufnr, &filetype, '$ccls/member', {}, l:viewport])
+    call s:request(&filetype, l:bufnr, '$ccls/member', l:params, l:Handler)
     normal! m'
 endfunction
 
@@ -325,9 +326,10 @@ function! ccls#messages#inheritance_hierarchy(derived, ...) abort
     \   'levels': g:ccls_levels,
     \   'derived': a:derived,
     \ }
+    let l:bufnr = bufnr('%')
     let l:viewport = index(a:000, '-float') >= 0 ? 'float' : 'split'
-    let l:Handler = function('s:handle_tree', [&filetype, '$ccls/inheritance', {'derived': a:derived}, l:viewport])
-    call s:request(&filetype, bufnr('%'), '$ccls/inheritance', l:params, l:Handler)
+    let l:Handler = function('s:handle_tree', [l:bufnr, &filetype, '$ccls/inheritance', {'derived': a:derived}, l:viewport])
+    call s:request(&filetype, l:bufnr, '$ccls/inheritance', l:params, l:Handler)
     normal! m'
 endfunction
 
@@ -352,8 +354,9 @@ function! ccls#messages#call_hierarchy(callee, ...) abort
     \   'levels': g:ccls_levels,
     \   'callee': a:callee,
     \ }
+    let l:bufnr = bufnr('%')
     let l:viewport = index(a:000, '-float') >= 0 ? 'float' : 'split'
-    let l:Handler = function('s:handle_tree', [&filetype, '$ccls/call', {'callee': a:callee}, l:viewport])
-    call s:request(&filetype, bufnr('%'), '$ccls/call', l:params, l:Handler)
+    let l:Handler = function('s:handle_tree', [l:bufnr, &filetype, '$ccls/call', {'callee': a:callee}, l:viewport])
+    call s:request(&filetype, l:bufnr, '$ccls/call', l:params, l:Handler)
     normal! m'
 endfunction

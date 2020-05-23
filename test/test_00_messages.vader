@@ -30,6 +30,8 @@ After:
   unlet! col
   unlet! data
   unlet! expected
+  unlet! bufnr
+  unlet! filetype
   unlet! extra_params
   unlet! function_mock
   unlet! handler_mock
@@ -647,12 +649,13 @@ Execute(Test hierarchy calls with float window):
 Execute(Test s:make_tree with no valid symbol under cursor):
   let Handle_tree = GetFunction(b:script, 'handle_tree')
 
+  let bufnr = 10
   let filetype = 'c'
   let method = 0 " Irrelevant
   let extra_params = {} " Irrelevant
   let data = ''
 
-  call Handle_tree(filetype, method, extra_params, data, 'split')
+  call Handle_tree(bufnr, filetype, method, extra_params, data, 'split')
 
   AssertNotEqual 'yggdrasil', &filetype
   AssertEqual 'vim-ccls: No hierarchy for the object under cursor', GetMessages()[-1]
