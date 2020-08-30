@@ -305,6 +305,21 @@ function! ccls#messages#member_hierarchy(...) abort
     normal! m'
 endfunction
 
+function! ccls#messages#member_function_hierarchy(...) abort
+    let l:params = {
+    \   'textDocument': s:text_document_identifier(),
+    \   'position': s:position(),
+    \   'hierarchy': v:true,
+    \   'levels': g:ccls_levels,
+    \   'kind':3,
+    \ }
+    let l:bufnr = bufnr('%')
+    let l:viewport = index(a:000, '-float') >= 0 ? 'float' : 'split'
+    let l:Handler = function('s:handle_tree', [l:bufnr, &filetype, '$ccls/member', {}, l:viewport])
+    call s:request(&filetype, l:bufnr, '$ccls/member', l:params, l:Handler)
+    normal! m'
+endfunction
+
 function! ccls#messages#inheritance(derived) abort
     call setqflist([])
     let l:params = {

@@ -41,6 +41,8 @@ command! CclsMembers                   call ccls#messages#members()
 
 command! -nargs=* CclsMemberHierarchy  call ccls#messages#member_hierarchy(<f-args>)
 
+command! -nargs=* CclsMemberFunctionHierarchy  call ccls#messages#member_function_hierarchy(<f-args>)
+
 command! CclsBase                      call ccls#messages#inheritance(v:false)
 command! CclsDerived                   call ccls#messages#inheritance(v:true)
 
