@@ -19,7 +19,11 @@ CONTENTS                                                   *vim-ccls-contents*
     Commands......................|vim-ccls-commands|
       CclsVars....................|CclsVars|
       CclsMembers.................|CclsMembers|
+      CclsMemberFunctions.........|CclsMemberFunctions|
+      CclsMemberTypes.............|CclsMemberTypes|
       CclsMemberHierarchy.........|CclsMemberHierarchy|
+      CclsMemberFunctionHierarchy.|CclsMemberFunctionHierarchy|
+      CclsMemberTypeHierarchy.....|CclsMemberTypeHierarchy|
       CclsBase....................|CclsBase|
       CclsDerived.................|CclsDerived|
       CclsBaseHierarchy...........|CclsBaseHierarchy|
@@ -237,9 +241,29 @@ CclsMembers                                                      *CclsMembers*
 
 Get a lists of members for the symbol under cursor.
 
+CclsMemberFunctions                                      *CclsMemberFunctions*
+
+Get a lists of function members for the symbol under cursor.
+
+CclsMemberTypes                                              *CclsMemberTypes*
+
+Get a lists of nested types for the symbol under cursor.
+
 CclsMemberHierarchy [-float]                             *CclsMemberHierarchy*
 
 Get a tree of members for the symbol under cursor.
+
+CclsMemberHierarchy [-float]                             *CclsMemberHierarchy*
+
+Get a tree of members for the symbol under cursor.
+
+CclsMemberFunctionHierarchy [-float]             *CclsMemberFunctionHierarchy*
+
+Get a tree of function members for the symbol under cursor.
+
+CclsMemberTypeHierarchy [-float]                     *CclsMemberTypeHierarchy*
+
+Get a tree of nested types for the symbol under cursor.
 
 CclsVars                                                            *CclsVars*
 
