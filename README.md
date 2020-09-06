@@ -81,9 +81,9 @@ list](http://vimdoc.sourceforge.net/htmldoc/quickfix.html).
   Get a list of functions called by the function under the cursor.
 * **CclsCalleeHierahy**:
   Get a hierarchy of functions called by the function under the cursor.
-* **CclsMembers**:
+* **CclsMembers**/**CclsMemberFunctions**/**CclsMemberTypes**:
   Get a lists of members for the symbol under cursor.
-* **CclsMemberHierarchy**:
+* **CclsMemberHierarchy**/**CclsMemberFunctionHierarchy**/**CclsMemberTypeHierarchy**:
   Get a tree of members for the symbol under cursor.
 * **CclsVars**:
   Get a list of document variables.

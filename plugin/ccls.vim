@@ -37,9 +37,13 @@ endif
 
 command! CclsVars                      call ccls#messages#vars()
 
-command! CclsMembers                   call ccls#messages#members()
+command! CclsMembers                   call ccls#messages#members({})
+command! CclsMemberFunctions           call ccls#messages#members({'kind': 3})
+command! CclsMemberTypes               call ccls#messages#members({'kind': 2})
 
-command! -nargs=* CclsMemberHierarchy  call ccls#messages#member_hierarchy(<f-args>)
+command! -nargs=* CclsMemberHierarchy         call ccls#messages#member_hierarchy({}, <f-args>)
+command! -nargs=* CclsMemberFunctionHierarchy call ccls#messages#member_hierarchy({'kind': 3}, <f-args>)
+command! -nargs=* CclsMemberTypeHierarchy     call ccls#messages#member_hierarchy({'kind': 2}, <f-args>)
 
 command! CclsBase                      call ccls#messages#inheritance(v:false)
 command! CclsDerived                   call ccls#messages#inheritance(v:true)

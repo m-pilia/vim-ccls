@@ -279,25 +279,27 @@ function! ccls#messages#vars() abort
     normal! m'
 endfunction
 
-function! ccls#messages#members() abort
+function! ccls#messages#members(extra_params) abort
     call setqflist([])
     let l:params = {
     \   'textDocument': s:text_document_identifier(),
     \   'position': s:position(),
     \   'hierarchy': v:false,
     \ }
+    call extend(l:params, a:extra_params)
     let l:Handler = function('s:handle_locations')
     call s:request(&filetype, bufnr('%'), '$ccls/member', l:params, l:Handler)
     normal! m'
 endfunction
 
-function! ccls#messages#member_hierarchy(...) abort
+function! ccls#messages#member_hierarchy(extra_params, ...) abort
     let l:params = {
     \   'textDocument': s:text_document_identifier(),
     \   'position': s:position(),
     \   'hierarchy': v:true,
     \   'levels': g:ccls_levels,
     \ }
+    call extend(l:params, a:extra_params)
     let l:bufnr = bufnr('%')
     let l:viewport = index(a:000, '-float') >= 0 ? 'float' : 'split'
     let l:Handler = function('s:handle_tree', [l:bufnr, &filetype, '$ccls/member', {}, l:viewport])

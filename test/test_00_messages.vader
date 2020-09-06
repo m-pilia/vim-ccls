@@ -423,31 +423,31 @@ Execute(Test ccls#messages#vars with ALE backend):
 Execute(Test ccls#messages#members with vim-lsc backend):
   source test/mock/lsc/server.vim
 
-  call Test_locations(function('ccls#messages#members'))
+  call Test_locations(function('ccls#messages#members', [{}]))
 
 
 Execute(Test ccls#messages#members with vim-lsp backend):
   source test/mock/lsp.vim
 
-  call Test_locations(function('ccls#messages#members'))
+  call Test_locations(function('ccls#messages#members', [{}]))
 
 
 Execute(Test ccls#messages#members with LanguageClient-neovim backend):
   source test/mock/LanguageClient.vim
 
-  call Test_locations(function('ccls#messages#members'))
+  call Test_locations(function('ccls#messages#members', [{}]))
 
 
 Execute(Test ccls#messages#members with coc.nvim backend):
   source test/mock/coc.vim
 
-  call Test_locations(function('ccls#messages#members'))
+  call Test_locations(function('ccls#messages#members', [{}]))
 
 
 Execute(Test ccls#messages#members with ALE backend):
   source test/mock/ale/lsp_linter.vim
 
-  call Test_locations(function('ccls#messages#members'))
+  call Test_locations(function('ccls#messages#members', [{}]))
 
 
 " ccls#messages#inheritance
@@ -571,31 +571,31 @@ Execute(Test ccls#messages#call_hierarchy with ALE backend):
 Execute(Test ccls#messages#member_hierarchy with vim-lsc backend):
   source test/mock/lsc/server.vim
 
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field', v:false)
+  call Test_hierarchy(function('ccls#messages#member_hierarchy', [{}]), '$ccls/member', 'field', v:false)
 
 
 Execute(Test ccls#messages#member_hierarchy with vim-lsp backend):
   source test/mock/lsp.vim
 
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field', v:false)
+  call Test_hierarchy(function('ccls#messages#member_hierarchy', [{}]), '$ccls/member', 'field', v:false)
 
 
 Execute(Test ccls#messages#member_hierarchy with LanguageClient-neovim backend):
   source test/mock/LanguageClient.vim
 
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field', v:false)
+  call Test_hierarchy(function('ccls#messages#member_hierarchy', [{}]), '$ccls/member', 'field', v:false)
 
 
 Execute(Test ccls#messages#member_hierarchy with coc.nvim backend):
   source test/mock/coc.vim
 
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field', v:false)
+  call Test_hierarchy(function('ccls#messages#member_hierarchy', [{}]), '$ccls/member', 'field', v:false)
 
 
 Execute(Test ccls#messages#member_hierarchy with ALE backend):
   source test/mock/ale/lsp_linter.vim
 
-  call Test_hierarchy(function('ccls#messages#member_hierarchy'), '$ccls/member', 'field', v:false)
+  call Test_hierarchy(function('ccls#messages#member_hierarchy', [{}]), '$ccls/member', 'field', v:false)
 
 
 " Inheritance hierarchy
@@ -640,7 +640,7 @@ Execute(Test hierarchy calls with float window):
   source test/mock/ale/lsp_linter.vim
 
   call Test_hierarchy(function('ccls#messages#call_hierarchy', [v:true, '-float']), '$ccls/call', 'node', v:true)
-  call Test_hierarchy(function('ccls#messages#member_hierarchy', ['-float']), '$ccls/member', 'field', v:true)
+  call Test_hierarchy(function('ccls#messages#member_hierarchy', [{}, '-float']), '$ccls/member', 'field', v:true)
   call Test_hierarchy(function('ccls#messages#inheritance_hierarchy', [v:true, '-float']), '$ccls/inheritance', 'node', v:true)
 
 
