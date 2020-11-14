@@ -1,3 +1,14 @@
+" This file is part of an installation of vim-yggdrasil, a vim/neovim tree viewer library.
+" The source code of vim-yggdrasil is available at https://github.com/m-pilia/vim-yggdrasil
+"
+" vim-yggdrasil is free software, distributed under the MIT license.
+" The full license is available at https://github.com/m-pilia/vim-yggdrasil/blob/master/LICENSE
+"
+" Yggdrasil version (git SHA-1): 1f7d1c4c224eaac9018314709a3f982385607edc
+"
+" This installation was generated on 2020-11-14T12:15:29+0100 with the following vim command:
+"     :YggdrasilPlant -plugin_dir=/home/martino/.vim/bundle/vim-ccls -namespace=ccls/yggdrasil
+
 scriptencoding utf-8
 
 " Callback to retrieve the tree item representation of an object.
@@ -222,7 +233,6 @@ function! s:filetype_settings() abort
     setlocal foldmethod=manual
     setlocal nobuflisted
     setlocal nofoldenable
-    setlocal nohlsearch
     setlocal nolist
     setlocal nomodifiable
     setlocal nonumber
