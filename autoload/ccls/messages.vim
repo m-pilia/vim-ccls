@@ -58,6 +58,38 @@ function! s:jump_to(file, line, column) abort
     let l:buffer = bufnr(a:file)
     let l:command = l:buffer !=# -1 ? 'b ' . l:buffer : 'edit ' . a:file
     silent execute l:command . ' | call cursor(' . a:line . ',' . a:column . ')'
+    call nvim_win_close(s:float_id, v:true)
+    let s:base_split_window = 0
+    let s:preview_split_window = 0
+    let s:yggdrasil_window = 0
+endfunction
+
+let s:base_split_window = 0
+let s:preview_split_window = 0
+let s:yggdrasil_window = 0
+
+" Jump to a specified position in a given file
+function! s:preview_to(file, line, column) abort
+    if s:yggdrasil_window == 0
+      let s:yggdrasil_window = nvim_get_current_win()
+    endif
+    if s:base_split_window == 0
+      silent execute "normal! \<c-w>\<c-p>"
+      let s:base_split_window = nvim_get_current_win()
+      call nvim_set_current_win(s:yggdrasil_window)
+    endif
+    if s:preview_split_window == 0
+      call nvim_set_current_win(s:base_split_window)
+      silent execute "botright vs"
+      let s:preview_split_window = nvim_get_current_win()
+      call nvim_set_current_win(s:yggdrasil_window)
+    endif
+    call nvim_set_current_win(s:preview_split_window)
+    let l:yggdrasil_bufno = bufnr('%')
+    let l:buffer = bufnr(a:file)
+    let l:command = l:buffer !=# -1 ? 'b ' . l:buffer : 'edit ' . a:file
+    silent execute l:command . ' | call cursor(' . a:line . ',' . a:column . ')'
+    call nvim_set_current_win(s:yggdrasil_window)
 endfunction
 
 " Send an LSP request. Mock a source file if necessary, since
@@ -186,6 +218,7 @@ function! s:get_tree_item(Callback, data) dict abort
     let l:tree_item = {
     \   'id': 0 + a:data.id,
     \   'command': function('s:jump_to', [l:file, l:line, l:column]),
+    \   'preview': function('s:preview_to', [l:file, l:line, l:column]),
     \   'collapsibleState': l:self.get_collapsible_state(a:data),
     \   'label': s:get_label(a:data),
     \ }
@@ -201,9 +234,12 @@ function! s:handle_tree(bufnr, filetype, method, extra_params, viewport, data) a
 
     " Create new buffer in a split
     if a:viewport ==? 'float' && exists('*nvim_open_win')
+        let l:current_window = nvim_get_current_win()
         let s:buffer_options = {
         \   'style': 'minimal',
-        \   'relative': 'cursor',
+        \   'relative': 'win',
+        \   'win': l:current_window,
+        \   'bufpos': nvim_win_get_cursor(l:current_window),
         \   'width': g:ccls_float_width,
         \   'height': g:ccls_float_height,
         \   'row': 0,
@@ -211,10 +247,6 @@ function! s:handle_tree(bufnr, filetype, method, extra_params, viewport, data) a
         \ }
         let s:float_id = nvim_open_win(nvim_create_buf(v:false, v:true), 0, s:buffer_options)
         call win_gotoid(s:float_id)
-        augroup vim_ccls_float_close
-            autocmd! * <buffer>
-            autocmd WinLeave <buffer> call nvim_win_close(s:float_id, v:true)
-        augroup END
     else
         let l:position = g:ccls_position =~# '\v^t|l' ? 'topleft' : 'botright'
         let l:orientation = g:ccls_orientation =~# '^v' ? 'vnew' : 'new'

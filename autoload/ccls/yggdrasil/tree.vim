@@ -60,6 +60,14 @@ function! s:node_exec() dict abort
     endif
 endfunction
 
+" Preview the node with the action associated to a node
+function! s:node_preview() dict abort
+  echo "node_preview"
+    if has_key(l:self.tree_item, 'preview')
+        call l:self.tree_item.preview()
+    endif
+endfunction
+
 " Return the depth level of the node in the tree. The level is defined
 " recursively: the root has depth 0, and each node has depth equal to the depth
 " of its parent increased by 1.
@@ -122,6 +130,7 @@ function! s:node_new(tree, object, tree_item, parent) abort
     \ 'children': [],
     \ 'level': function('s:node_level'),
     \ 'exec': function('s:node_exec'),
+    \ 'preview': function('s:node_preview'),
     \ 'set_collapsed': function('s:node_set_collapsed'),
     \ 'render': function('s:node_render'),
     \ }
@@ -157,6 +166,11 @@ endfunction
 " Run the action associated to the node currently under the cursor.
 function! s:tree_exec_node_under_cursor() dict abort
     call s:get_node_under_cursor(l:self).exec()
+endfunction
+
+" Preview the action associated to the node currently under the cursor.
+function! s:tree_preview_node_under_cursor() dict abort
+    call s:get_node_under_cursor(l:self).preview()
 endfunction
 
 " Render the {tree}. This will replace the content of the buffer with the
@@ -252,12 +266,16 @@ function! s:filetype_settings() abort
     nnoremap <silent> <buffer> <Plug>(yggdrasil-execute-node)
         \ :call b:yggdrasil_tree.exec_node_under_cursor()<cr>
 
+    nnoremap <silent> <buffer> <Plug>(yggdrasil-preview-node)
+        \ :call b:yggdrasil_tree.preview_node_under_cursor()<cr>
+
     nnoremap <silent> <buffer> <Plug>(yggdrasil-wipe-tree)
         \ :call b:yggdrasil_tree.wipe()<cr>
 
     if !exists('g:yggdrasil_no_default_maps')
         nmap <silent> <buffer> o    <Plug>(yggdrasil-toggle-node)
         nmap <silent> <buffer> <cr> <Plug>(yggdrasil-execute-node)
+        nmap <silent> <buffer> p <Plug>(yggdrasil-preview-node)
         nmap <silent> <buffer> q    <Plug>(yggdrasil-wipe-tree)
     endif
 endfunction
@@ -278,6 +296,7 @@ function! ccls#yggdrasil#tree#new(provider) abort
     \ 'provider': a:provider,
     \ 'set_collapsed_under_cursor': function('s:tree_set_collapsed_under_cursor'),
     \ 'exec_node_under_cursor': function('s:tree_exec_node_under_cursor'),
+    \ 'preview_node_under_cursor': function('s:tree_preview_node_under_cursor'),
     \ 'update': function('s:tree_update'),
     \ 'wipe': function('s:tree_wipe'),
     \ }
