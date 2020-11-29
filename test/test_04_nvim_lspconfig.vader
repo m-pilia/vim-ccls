@@ -12,15 +12,15 @@ After:
 
   unlet! call_id
 
-Execute(Test ccls#lsp#nvim_lsp#callback()):
-  let call_id = ccls#lsp#nvim_lsp#register(mock_handler.function)
-  call ccls#lsp#nvim_lsp#callback(call_id, test_data)
+Execute(Test ccls#lsp#nvim_lspconfig#callback()):
+  let call_id = ccls#lsp#nvim_lspconfig#register(mock_handler.function)
+  call ccls#lsp#nvim_lspconfig#callback(call_id, test_data)
 
   AssertEqual 1, mock_handler.count
   AssertEqual 1, len(mock_handler.args[0])
   AssertEqual test_data, mock_handler.args[0][0]
 
   " Test that the callback is unregistered after the first call
-  call ccls#lsp#nvim_lsp#callback(call_id, test_data)
+  call ccls#lsp#nvim_lspconfig#callback(call_id, test_data)
   AssertEqual 1, mock_handler.count
 

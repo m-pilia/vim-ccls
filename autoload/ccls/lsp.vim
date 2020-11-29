@@ -95,9 +95,9 @@ function! ccls#lsp#request(bufnr, method, params, handler) abort
         catch
             call ccls#util#warning('LSP error')
         endtry
-    elseif get(g:, 'nvim_lsp', v:false)
-        " Use nvim-lsp
-        let l:call_id = ccls#lsp#nvim_lsp#register(a:handler)
+    elseif get(g:, 'lspconfig', v:false)
+        " Use nvim-lspconfig
+        let l:call_id = ccls#lsp#nvim_lspconfig#register(a:handler)
         let l:args = [a:bufnr, a:method, a:params, l:call_id]
         call luaeval('require("vim_ccls").request(unpack(_A))', l:args)
     else

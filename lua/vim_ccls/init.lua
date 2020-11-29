@@ -1,5 +1,5 @@
 local function warning(message)
-    vim.api.nvim_call_function("ccls#util#warning", {"nvim-lsp error: " .. message})
+    vim.api.nvim_call_function("ccls#util#warning", {"nvim-lspconfig error: " .. message})
 end
 
 local function get_ccls(bufnr)
@@ -24,7 +24,7 @@ local function request(bufnr, method, params, call_id)
         if not result then
             warning("no result from ccls")
         else
-            vim.api.nvim_call_function("ccls#lsp#nvim_lsp#callback", {call_id, result})
+            vim.api.nvim_call_function("ccls#lsp#nvim_lspconfig#callback", {call_id, result})
         end
     end)
 
