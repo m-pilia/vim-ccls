@@ -253,10 +253,6 @@ CclsMemberHierarchy [-float]                             *CclsMemberHierarchy*
 
 Get a tree of members for the symbol under cursor.
 
-CclsMemberHierarchy [-float]                             *CclsMemberHierarchy*
-
-Get a tree of members for the symbol under cursor.
-
 CclsMemberFunctionHierarchy [-float]             *CclsMemberFunctionHierarchy*
 
 Get a tree of function members for the symbol under cursor.
