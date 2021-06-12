@@ -9,10 +9,14 @@ if [ $# -gt 0 ] && [ "$1" == "--profile" ]; then
     profile_prefix='profile_file'
 fi
 
-# Using the Docker image developed for ALE
-docker_image=martinopilia/vim-ccls
+docker_image=martinopilia/vim-ccls:1
 
-docker pull "${docker_image}" || docker build -t "${docker_image}" .
+echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+if ! docker pull "${docker_image}" ; then
+    docker build -t "${docker_image}" .
+    docker image push docker.io/${docker_image} || echo "Docker push failed"
+fi
 
 vim_binaries=$(docker run --rm "${docker_image}" ls /vim-build/bin \
              | grep -E '^(neo)?vim' )
