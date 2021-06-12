@@ -26,29 +26,32 @@ exit_status=0
 
 # Run tests
 for vim in ${vim_binaries}; do
+    for test_suite in ./test/*.vader ; do
+        test_name=$(basename "${test_suite}" | cut -d'.' -f1)
 
-    # Collect profiling data if an output file name is provided
-    if [ "${profile_prefix}" != '' ]; then
-        profile_file="${profile_prefix}_${vim}"
-    fi
+        # Collect profiling data if an output file name is provided
+        if [ "${profile_prefix}" != '' ]; then
+            profile_file="${profile_prefix}_${vim}_${test_name}"
+        fi
 
-    find test -name '*.swp' -delete
+        find test -name '*.swp' -delete
 
-    docker run \
-        --rm \
-        -a stderr \
-        -e VADER_OUTPUT_FILE=/dev/stderr \
-        -e VIM_PROFILE_FILE="${profile_file}" \
-        -v "$PWD:/testplugin" \
-        -v "$PWD/test:/home"\
-        -w /testplugin \
-        "${docker_image}" \
-            "/vim-build/bin/${vim}" -u test/vimrc "+Vader! ./test/*.vader" 2>&1
+        docker run \
+            --rm \
+            -a stderr \
+            -e VADER_OUTPUT_FILE=/dev/stderr \
+            -e VIM_PROFILE_FILE="${profile_file}" \
+            -v "$PWD:/testplugin" \
+            -v "$PWD/test:/home"\
+            -w /testplugin \
+            "${docker_image}" \
+                "/vim-build/bin/${vim}" -u test/vimrc "+Vader! ${test_suite}" 2>&1
 
-    # shellcheck disable=SC2181
-    if [ "$?" -ne 0 ]; then
-        exit_status=1
-    fi
+        # shellcheck disable=SC2181
+        if [ "$?" -ne 0 ]; then
+            exit_status=1
+        fi
+    done
 done
 
 # Run vint

@@ -1,4 +1,5 @@
 Before:
+  source test/utils.vim
   let b:tmp_dir = has('win32') ? expand('%TEMP%\') : '/tmp/'
   let b:ccls_log_file = b:tmp_dir . 'vim_ccls.log'
   let b:warning_text = 'This is a warning'
