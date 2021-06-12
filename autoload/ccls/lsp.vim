@@ -48,6 +48,12 @@ function! s:coc_handler(handler, error, data) abort
     call a:handler(a:data)
 endfunction
 
+" Handle a response from nvim-lspconfig
+function! s:nvim_lspconfig_handler(handler, data) abort
+    call ccls#util#log('Incoming', 'nvim-lspconfig', a:data)
+    call a:handler(a:data)
+endfunction
+
 " Make a request to the lsp server
 " Try to automatically find an available LSP client
 function! ccls#lsp#request(bufnr, method, params, handler) abort
@@ -97,7 +103,8 @@ function! ccls#lsp#request(bufnr, method, params, handler) abort
         endtry
     elseif get(g:, 'lspconfig', v:false)
         " Use nvim-lspconfig
-        let l:call_id = ccls#lsp#nvim_lspconfig#register(a:handler)
+        let l:Callback = function('s:nvim_lspconfig_handler', [a:handler])
+        let l:call_id = ccls#lsp#nvim_lspconfig#register(l:Callback)
         let l:args = [a:bufnr, a:method, a:params, l:call_id]
         call luaeval('require("vim_ccls").request(unpack(_A))', l:args)
     else
