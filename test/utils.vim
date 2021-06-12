@@ -6,17 +6,35 @@ function! s:get_scripts() abort
     return l:out
 endfunction
 
-" Get a (possibly local) function from a script
-function! GetFunction(script, name) abort
+" Get the name of a (possibly local) function from a script
+function! s:get_function_name(script, name) abort
     if match(s:get_scripts(), a:script) < 0
         exec 'source ' . a:script
     endif
     for l:line in split(s:get_scripts(), '\n')
         if match(l:line, a:script) >= 0
             let l:sid = str2nr(split(l:line, ': ')[0])
-            return function('<SNR>' . l:sid . '_' . a:name)
+            return '<SNR>' . l:sid . '_' . a:name
         endif
     endfor
+endfunction
+
+" Get a (possibly local) function from a script
+function! GetFunction(script, name) abort
+    return function(s:get_function_name(a:script, a:name))
+endfunction
+
+" Replace the implementation of a function with a mock
+function! MockFunction(script, name, mock) abort
+    let l:function_name = s:get_function_name(a:script, a:name)
+
+    let l:code = "
+    \\n    function! %s(...) abort closure
+    \\n        return call(a:mock, a:000)
+    \\n    endfunction
+    \"
+
+    execute printf(l:code, l:function_name)
 endfunction
 
 " Get a list of echoed messages

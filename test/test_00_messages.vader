@@ -101,38 +101,6 @@ Execute(Test plugin):
   Assert exists(':CclsCalleeHierarchy')
 
 
-Execute(Test s:path2uri):
-  let Path2uri = GetFunction(b:script, 'path2uri')
-
-  if has('win32')
-    let path = 'C:\foò\bär\file.cpp'
-    let expected = 'file://C:\fo%C3%B2\b%C3%A4r\file.cpp'
-  else
-    let path = '/foò/bär/file.cpp'
-    let expected = 'file:///fo%C3%B2/b%C3%A4r/file.cpp'
-  endif
-
-  let uri = Path2uri(path)
-
-  AssertEqual expected, uri
-
-
-Execute(Test s:uri2path):
-  let Uri2path = GetFunction(b:script, 'uri2path')
-
-  if has('win32')
-    let uri = 'file://C:\fo%C3%B2\b%C3%A4r\file.cpp'
-    let expected = 'C:\foò\bär\file.cpp'
-  else
-    let uri = 'file:///fo%C3%B2/b%C3%A4r/file.cpp'
-    let expected = '/foò/bär/file.cpp'
-  endif
-
-  let path = Uri2path(uri)
-
-  AssertEqual expected, path
-
-
 Execute(Test s:text_document_identifier):
   let Text_document_identifier = GetFunction(b:script, 'text_document_identifier')
 

@@ -1,46 +1,6 @@
-" Convert a path to an uri
-function! s:path2uri(path) abort
-    let l:path = substitute(a:path, '\', '/', 'g')
-
-    let l:prefix = matchstr(l:path, '\v(^\w+::|^\w+://)')
-    if len(l:prefix) < 1
-        let l:prefix = 'file://'
-    endif
-
-    let l:volume_end = has('win32') ? matchstrpos(l:path, '\c[A-Z]:')[2] : 0
-    if l:volume_end < 0
-        let l:volume_end = 0
-    endif
-
-    let l:uri = l:prefix . strpart(l:path, 0, l:volume_end)
-    for l:index in range(l:volume_end, len(l:path) - 1)
-        if l:path[l:index] =~# '^[a-zA-Z0-9_.~/-]$'
-            let l:uri .= l:path[l:index]
-        else
-            let l:uri .= printf('%%%02X', char2nr(l:path[l:index]))
-        endif
-    endfor
-
-    return l:uri
-endfunction
-
-" Convert an uri to a path
-function! s:uri2path(uri) abort
-    let l:path = substitute(a:uri, '^file://', '', '')
-    let l:path = substitute(l:path, '[?#].*', '', '')
-    let l:path = substitute(l:path,
-    \                       '%\(\x\x\)',
-    \                       '\=printf("%c", str2nr(submatch(1), 16))',
-    \                       'g')
-    if has('win32')
-        let l:path = substitute(l:path, '/', '\\', 'g')
-    endif
-    return l:path
-endfunction
-
 " Get the text document identifier for the current buffer
 function! s:text_document_identifier() abort
-    return {'uri': s:path2uri(expand('%:p'))}
+    return {'uri': ccls#uri#path2uri(expand('%:p'))}
 endfunction
 
 " Get the position under the cursor
@@ -249,7 +209,7 @@ function! s:handle_locations(data) abort
         for l:item in a:data
             let l:lnum = l:item.range.start.line + 1
             let l:col = l:item.range.start.character + 1
-            let l:path = s:uri2path(l:item.uri)
+            let l:path = ccls#uri#uri2path(l:item.uri)
             let l:text = readfile(l:path)[l:lnum - 1]
 
             call add(l:locations, {
