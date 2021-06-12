@@ -4,8 +4,18 @@ services:
     - docker
 language: generic
 
+env:
+  CODECOV_UPLOADER=codecov
+
 install:
     - pip install --user covimerage==0.2.1
+    - |
+        curl -fLso "${CODECOV_UPLOADER}" https://codecov.io/bash;
+        VERSION=$(grep -o 'VERSION=\"[0-9\.]*\"' "${CODECOV_UPLOADER}" | cut -d'"' -f2);
+        for i in 1 256 512
+        do
+            shasum -a $i -c <(curl -s "https://raw.githubusercontent.com/codecov/codecov-bash/${VERSION}/SHA${i}SUM") | grep -w "${CODECOV_UPLOADER}: OK"
+        done
 
 script:
     - ./run_tests.sh --profile
@@ -21,4 +31,4 @@ after_success: |
     sed -i "s,/testplugin/,$PWD/,g" .coverage_covimerage
     python -m covimerage -vv xml
     python -m covimerage report -m
-    bash <(curl -s https://codecov.io/bash) -X search -X gcov -X coveragepy -f coverage.xml
+    bash "${CODECOV_UPLOADER}" -X search -X gcov -X coveragepy -f coverage.xml
