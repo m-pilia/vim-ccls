@@ -1,0 +1,54 @@
+name: Checks
+
+on: [push, pull_request]
+
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+    env:
+      CODECOV_UPLOADER: codecov
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v1
+
+    - name: Install dependencies
+      run: |
+        pip install --user 'click<8.0.0'
+        pip install --user covimerage==0.2.1
+
+    - name: Install Codecov uploader
+      run: |
+        curl -fLso "${CODECOV_UPLOADER}" https://codecov.io/bash;
+
+    - name: Verify Codecov uploader checksum
+      run: |
+        set -eo pipefail
+        version=$(grep -o 'VERSION=\"[0-9\.]*\"' "${CODECOV_UPLOADER}" | cut -d'"' -f2);
+        for algorithm in 1 256 512
+        do
+            shasum \
+                --algorithm ${algorithm} \
+                --check \
+                --ignore-missing \
+                <(curl -s "https://raw.githubusercontent.com/codecov/codecov-bash/${version}/SHA${algorithm}SUM") \
+              | grep -w "${CODECOV_UPLOADER}: OK"
+        done
+
+    - name: Run tests
+      shell: bash
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        ./run_tests.sh --profile
+
+    - name: Upload coverage report
+      run: |
+        set -eo pipefail
+        profile_file=$(ls | grep 'profile_file.*0\.4\.3')
+        python -m covimerage write_coverage ${profile_file}
+        sed -i "s,/testplugin/,$PWD/,g" .coverage_covimerage
+        python -m covimerage -vv xml
+        python -m covimerage report -m
+        bash "${CODECOV_UPLOADER}" -X search -X gcov -X coveragepy -f coverage.xml

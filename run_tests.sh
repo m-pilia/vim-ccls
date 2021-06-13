@@ -85,4 +85,13 @@ if [ "$?" -ne 0 ]; then
     exit_status=1
 fi
 
+# Validate Codecov configuration
+curl --data-binary @.codecov.yml https://codecov.io/validate | tee codecov_validation
+head -n 1 codecov_validation | grep 'Valid!'
+
+# shellcheck disable=SC2181
+if [ "$?" -ne 0 ]; then
+    exit_status=1
+fi
+
 exit ${exit_status}
