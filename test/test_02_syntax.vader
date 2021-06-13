@@ -1,4 +1,5 @@
 Before:
+  source test/utils.vim
   syntax clear
 
 Execute(Test ccls#syntax#additional):

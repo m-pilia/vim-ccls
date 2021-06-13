@@ -8,6 +8,7 @@ env:
   CODECOV_UPLOADER=codecov
 
 install:
+    - pip install --user 'click<8.0.0'
     - pip install --user covimerage==0.2.1
     - |
         curl -fLso "${CODECOV_UPLOADER}" https://codecov.io/bash;
@@ -27,7 +28,7 @@ script:
 after_success: |
     set -eo pipefail
     profile_file=$(ls | grep 'profile_file.*0\.4\.3')
-    python -m covimerage write_coverage "${profile_file}"
+    python -m covimerage write_coverage ${profile_file}
     sed -i "s,/testplugin/,$PWD/,g" .coverage_covimerage
     python -m covimerage -vv xml
     python -m covimerage report -m
