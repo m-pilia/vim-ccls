@@ -2,14 +2,19 @@ Before:
   let b:script = 'autoload/ccls/uri.vim'
 
   source test/utils.vim
-  source autoload/ccls/uri.vim
 
 
 After:
   unlet! b:script
 
 
+Execute(Setup):
+  source autoload/ccls/uri.vim
+
+
 Execute(Test ccls#uri#path2uri UNIX):
+  call MockFunction(b:script, 'is_windows', {-> 0})
+  call MockFunction(b:script, 'is_cygwin', {-> 0})
   let path = '/foò/bär/file.cpp'
   let expected = 'file:///fo%C3%B2/b%C3%A4r/file.cpp'
 
@@ -20,6 +25,7 @@ Execute(Test ccls#uri#path2uri UNIX):
 
 Execute(Test ccls#uri#path2uri Windows):
   call MockFunction(b:script, 'is_windows', {-> 1})
+  call MockFunction(b:script, 'is_cygwin', {-> 0})
   let path = 'C:\foò\bär\file.cpp'
   let expected = 'file:///C:/fo%C3%B2/b%C3%A4r/file.cpp'
 
@@ -40,6 +46,8 @@ Execute(Test ccls#uri#path2uri Cygwin):
 
 
 Execute(Test ccls#uri#uri2path UNIX):
+  call MockFunction(b:script, 'is_windows', {-> 0})
+  call MockFunction(b:script, 'is_cygwin', {-> 0})
   let uri = 'file:///fo%C3%B2/b%C3%A4r/file.cpp'
   let expected = '/foò/bär/file.cpp'
 
@@ -50,6 +58,7 @@ Execute(Test ccls#uri#uri2path UNIX):
 
 Execute(Test ccls#uri#uri2path Windows):
   call MockFunction(b:script, 'is_windows', {-> 1})
+  call MockFunction(b:script, 'is_cygwin', {-> 0})
   let uri = 'file:///C:/fo%C3%B2/b%C3%A4r/file.cpp'
   let expected = 'C:\foò\bär\file.cpp'
 
