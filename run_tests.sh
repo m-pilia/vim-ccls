@@ -13,9 +13,11 @@ docker_image=martinopilia/vim-ccls:1
 
 echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
-if ! docker pull "${docker_image}" ; then
-    docker build -t "${docker_image}" .
-    docker image push docker.io/${docker_image} || echo "Docker push failed"
+if ! docker inspect --type=image "${docker_image}" >/dev/null 2>&1 ; then
+    if ! docker pull "${docker_image}" ; then
+        docker build -t "${docker_image}" .
+        docker image push docker.io/${docker_image} || echo "Docker push failed"
+    fi
 fi
 
 vim_binaries=$(docker run --rm "${docker_image}" ls /vim-build/bin \
@@ -25,7 +27,7 @@ set +e
 exit_status=0
 
 # Run tests
-for vim in ${vim_binaries}; do
+for vim in ${vim_binaries} ; do
     for test_suite in ./test/*.vader ; do
         test_name=$(basename "${test_suite}" | cut -d'.' -f1)
 
