@@ -140,7 +140,7 @@ endfunction
 
 " Produce the tree item representation for a given object.
 function! s:get_tree_item(Callback, data) dict abort
-    let l:file = matchlist(a:data.location.uri, 'file://\(.*\)')[1]
+    let l:file = ccls#uri#uri2path(a:data.location.uri)
     let l:line = str2nr(a:data.location.range.start.line) + 1
     let l:column = str2nr(a:data.location.range.start.character) + 1
     let l:tree_item = {

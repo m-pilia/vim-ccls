@@ -330,7 +330,7 @@ Execute(Test s:get_tree_item):
   \   'name': 'mock_name',
   \   'numChildren': 1,
   \   'location': {
-  \     'uri': 'file://mock_uri',
+  \     'uri': 'file:///fo%C3%B2/b%C3%A4r/file.cpp',
   \     'range': {
   \       'start': {
   \         'line': 20,
@@ -348,6 +348,7 @@ Execute(Test s:get_tree_item):
   AssertEqual 'success', handler_mock.args[0][0]
   AssertEqual 10, handler_mock.args[0][1].id
   AssertEqual type({->0}), type(handler_mock.args[0][1].command)
+  Assert stridx(string(handler_mock.args[0][1].command), '/foò/bär/file.cpp') >= 0, "Incorrect path"
   AssertEqual 'collapsed', handler_mock.args[0][1].collapsibleState
   AssertEqual 'mock_name', handler_mock.args[0][1].label
 

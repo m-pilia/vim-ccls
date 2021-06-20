@@ -59,7 +59,7 @@ Execute(Test ccls#uri#uri2path UNIX):
 Execute(Test ccls#uri#uri2path Windows):
   call MockFunction(b:script, 'is_windows', {-> 1})
   call MockFunction(b:script, 'is_cygwin', {-> 0})
-  let uri = 'file:///C:/fo%C3%B2/b%C3%A4r/file.cpp'
+  let uri = 'file:///C%3A/fo%C3%B2/b%C3%A4r/file.cpp'
   let expected = 'C:\foò\bär\file.cpp'
 
   let path = ccls#uri#uri2path(uri)
@@ -68,7 +68,7 @@ Execute(Test ccls#uri#uri2path Windows):
 Execute(Test ccls#uri#uri2path Cygwin):
   call MockFunction(b:script, 'is_windows', {-> 1})
   call MockFunction(b:script, 'is_cygwin', {-> 1})
-  let uri = 'file:///C:/fo%C3%B2/b%C3%A4r/file.cpp'
+  let uri = 'file:///C%3A/fo%C3%B2/b%C3%A4r/file.cpp'
   let expected = '/c/foò/bär/file.cpp'
 
   let path = ccls#uri#uri2path(uri)
