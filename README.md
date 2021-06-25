@@ -1,6 +1,6 @@
 vim-ccls: vim plugin for the ccls Language Server
 ===============================================================
-[![Travis CI Build Status](https://travis-ci.org/m-pilia/vim-ccls.svg?branch=master)](https://travis-ci.org/m-pilia/vim-ccls)
+[![Checks](https://github.com/m-pilia/vim-ccls/workflows/Checks/badge.svg)](https://github.com/m-pilia/vim-ccls/actions/workflows/checks.yml)
 [![codecov](https://codecov.io/gh/m-pilia/vim-ccls/branch/master/graph/badge.svg)](https://codecov.io/gh/m-pilia/vim-ccls/branch/master)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/m-pilia/vim-ccls/blob/master/LICENSE)
 ![Docker hub](https://img.shields.io/docker/cloud/build/martinopilia/vim-ccls)
