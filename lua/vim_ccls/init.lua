@@ -12,6 +12,26 @@ local function get_ccls(bufnr)
     return nil
 end
 
+local function handle_response(err, call_id, result)
+    if err then
+        warning("no result from ccls")
+    else
+        vim.api.nvim_call_function("ccls#lsp#nvim_lspconfig#callback", {call_id, result})
+    end
+end
+
+local function get_handler(call_id)
+    version = vim.version()
+
+    if version['major'] <= 0 and version['minor'] <= 5 and version['patch'] <= 0 then
+        handler = function(err, method, result, client_id) handle_response(err, call_id, result) end
+    else
+        handler = function(err, result, ctx, config) handle_response(err, call_id, result) end
+    end
+
+    return handler
+end
+
 local function request(bufnr, method, params, call_id)
     ccls = get_ccls(bufnr)
 
@@ -20,13 +40,7 @@ local function request(bufnr, method, params, call_id)
         return
     end
 
-    status = ccls.request(method, params, function(_, method, result, client_id)
-        if not result then
-            warning("no result from ccls")
-        else
-            vim.api.nvim_call_function("ccls#lsp#nvim_lspconfig#callback", {call_id, result})
-        end
-    end)
+    status = ccls.request(method, params, get_handler(call_id))
 
     if not status then
         warning("failed ccls request")
