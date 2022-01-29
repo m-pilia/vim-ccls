@@ -4,9 +4,9 @@
 " vim-yggdrasil is free software, distributed under the MIT license.
 " The full license is available at https://github.com/m-pilia/vim-yggdrasil/blob/master/LICENSE
 "
-" Yggdrasil version (git SHA-1): 1f7d1c4c224eaac9018314709a3f982385607edc
+" Yggdrasil version (git SHA-1): 930b0065958788f09d2bef4d39b26b11426bac0b
 "
-" This installation was generated on 2020-11-14T12:15:29+0100 with the following vim command:
+" This installation was generated on 2022-01-29T20:31:41+0100 with the following vim command:
 "     :YggdrasilPlant -plugin_dir=/home/martino/.vim/bundle/vim-ccls -namespace=ccls/yggdrasil
 
 scriptencoding utf-8
@@ -174,7 +174,7 @@ function! s:tree_render(tree) abort
     setlocal modifiable
     silent 1,$delete _
     silent 0put=l:text
-    $d
+    $d_
     setlocal nomodifiable
 
     call setpos('.', l:cursor)
