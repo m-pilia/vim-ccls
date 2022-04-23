@@ -4,7 +4,7 @@ end
 
 local function get_ccls(bufnr)
     clients = vim.lsp.buf_get_clients(bufnr)
-    for _, v in ipairs(clients) do
+    for _, v in pairs(clients) do
         if v["name"] == "ccls" then
             return v
         end
