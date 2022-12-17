@@ -64,6 +64,8 @@ function! ccls#lsp#request(bufnr, method, params, handler) abort
     \ }
     call ccls#util#log('Outgoing', l:log_data)
 
+    let l:vim_lsp_available_servers = lsp#get_server_names()
+
     if exists('*lsc#server#userCall')
         " Use vim-lsc
         let l:Callback = function('s:vim_lsc_handler', [a:handler])
@@ -76,21 +78,17 @@ function! ccls#lsp#request(bufnr, method, params, handler) abort
         " Use coc.nvim
         let l:Callback = function('s:coc_handler', [a:handler])
         call CocRequestAsync('ccls', a:method, a:params, l:Callback)
-    elseif exists('*lsp#send_request')
+    elseif exists('*lsp#send_request') &&
+      \ len(l:vim_lsp_available_servers) != 0 &&
+      \ count(l:vim_lsp_available_servers, 'ccls') != 0
         " Use vim-lsp
-        let l:available_servers = lsp#get_server_names()
-        if len(l:available_servers) != 0 &&
-        \  count(l:available_servers, 'ccls') != 0
-            let l:request = {
-            \   'method': a:method,
-            \   'params': a:params,
-            \   'on_notification': function('s:vim_lsp_handler', [a:handler]),
-            \ }
+        let l:request = {
+        \   'method': a:method,
+        \   'params': a:params,
+        \   'on_notification': function('s:vim_lsp_handler', [a:handler]),
+        \ }
 
-            call lsp#send_request('ccls', l:request)
-        else
-            call ccls#util#warning('ccls language server unvailable')
-        endif
+        call lsp#send_request('ccls', l:request)
     elseif exists('*ale#lsp_linter#SendRequest')
         " Use ALE
         let l:message = [0, a:method, a:params]
